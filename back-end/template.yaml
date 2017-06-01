@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Recipe bot back-end stack.
+Resources:
+  RecipeRequestHandlerLogic:
+    Properties:
+      CodeUri: s3://recipe-bot-back-end/bot_back_end.zip
+      Description: Lamda function to handle recipe requests.
+      Events:
+        Recipe:
+          Properties:
+            Method: get
+            Path: /recipe
+          Type: Api
+      Handler: recipe_bot.handler
+      MemorySize: 128
+      Runtime: python3.6
+      Timeout: 10
+    Type: AWS::Serverless::Function
