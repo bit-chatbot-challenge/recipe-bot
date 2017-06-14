@@ -166,10 +166,14 @@ def dispatch(intent_request):
     raise Exception('Intent with name ' + intent_name + ' not supported')
 
 
+
+""" --- Main handler --- """
 def handler(event, contex):
     """
     Handle incoming recipe requests by passing event to dispatch function
     """
+    # Get search results
+
     # Print request contents
     print("Received recipe request: " + json.dumps(event, indent=2))
     logger.debug('event.bot.name={}'.format(event['bot']['name']))
