@@ -77,7 +77,7 @@ def build_validation_result(is_valid, violated_slot, message_content):
     }
 
 
-def validate_find_recipe(recipe_type, serving_size, restrictions):
+def validate_find_recipe(recipe_type, serving_size, restrictions, recipe_time):
     """
     Called by find_recipe to validate slot data of request.
     """
@@ -96,6 +96,11 @@ def validate_find_recipe(recipe_type, serving_size, restrictions):
                                        'Restrictions',
                                        'Are there any dietary restrictions I should know about?')
 
+    if recipe_time is None:
+        return build_validation_result(False,
+                                       'RecipeTime',
+                                       'How long should this take to make?')
+
     return build_validation_result(True, None, None)
 
 
@@ -107,6 +112,7 @@ def find_recipe(intent_request):
     recipe_type = get_slots(intent_request)["RecipeType"]
     serving_size = get_slots(intent_request)["ServingSize"]
     restrictions = get_slots(intent_request)["Restrictions"]
+    recipe_time = get_slots(intent_request)["RecipeTime"]
     # Get invocation source
     source = intent_request['invocationSource']
 
@@ -114,7 +120,7 @@ def find_recipe(intent_request):
     if source == 'DialogCodeHook':
         slots = get_slots(intent_request)
 
-        validation_result = validate_find_recipe(recipe_type, serving_size, restrictions)
+        validation_result = validate_find_recipe(recipe_type, serving_size, restrictions, recipe_time)
         if not validation_result['isValid']:
             slots[validation_result['violatedSlot']] = None
             return elicit_slot(intent_request['sessionAttributes'],
