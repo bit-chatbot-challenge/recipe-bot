@@ -16,7 +16,6 @@ def get_slots(intent_request):
     """
     return intent_request['currentIntent']['slots']
 
-
 def elicit_slot(session_attributes, intent_name, slots, slot_to_elicit, message):
     """
     Called by find_recipe to elicit a missing slot from the user.
