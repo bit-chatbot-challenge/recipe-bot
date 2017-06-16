@@ -11,11 +11,19 @@ class TestAPI(unittest.TestCase):
 	# Test creating basic request parameters as payload:
 	def test_create_basic_payload(self):
 		expected_payload = OrderedDict({
-			'_app_id': os.environ["AWS_YUMMLY_APP_ID"],
-			'_app_key': os.environ['AWS_YUMMLY_APP_KEY'],
 			'q': 'onion soup',
 		})
 		payload = create_payload('onion soup')
+		self.assertEqual(expected_payload, payload)
+
+	# Test utility for creating payload with optional allergy parameter
+	def test_optional_parameter_utility(self):
+		expected_payload = OrderedDict({
+			'q': 'onion soup',
+			'allowedAllergy[]': 'Gluten-Free'
+		})
+		allergy = "Gluten-Free"
+		payload = create_payload('onion soup', allergy=allergy)
 		self.assertEqual(expected_payload, payload)
 
 	# Test simple search for onion soup
@@ -25,14 +33,7 @@ class TestAPI(unittest.TestCase):
 		simple_response = get_search_results(simple_search_term)
 		self.assertEqual(expected_simple_result, simple_response.status_code)
 
-	# Test utility for creating payload with optional allergy parameter
-	def test_optional_parameter_utility(self):
-		expected_payload = OrderedDict({
-			'_app_id': os.environ["AWS_YUMMLY_APP_ID"],
-			'_app_key': os.environ['AWS_YUMMLY_APP_KEY'],
-			'q': 'onion soup',
-			'allowedAllergy[]': 'Gluten-Free'
-		})
+	
 
 	# Test search with allergy parameter
 	def test_allergy_search_api(self):
