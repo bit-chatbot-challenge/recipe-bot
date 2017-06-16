@@ -166,8 +166,6 @@ def dispatch(intent_request):
     raise Exception('Intent with name ' + intent_name + ' not supported')
 
 
-
-
 """ --- Main handler --- """
 def handler(event, contex):
     """
