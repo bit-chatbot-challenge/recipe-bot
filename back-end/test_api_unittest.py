@@ -2,7 +2,6 @@
 This is the test suite for methods related to querying the Yummly API.
 """
 import unittest
-import os
 from recipe_bot import get_search_results, create_payload
 
 """
@@ -20,7 +19,7 @@ class TestPayloadCreation(unittest.TestCase):
 	def test_optional_allergy_parameter(self):
 		expected_payload = {
 			'q': 'onion soup',
-			'allowedAllergy[]': 'Gluten-Free'
+			'allowedAllergy[]': 'Gluten-Free',
 		}
 		allergy = "Gluten-Free"
 		payload = create_payload('onion soup', allergy=allergy)
@@ -30,10 +29,32 @@ class TestPayloadCreation(unittest.TestCase):
 	def test_optional_time_parameter(self):
 		expected_payload = {
 			'q': 'onion soup',
-			'maxTotalTimeInSeconds': '5400'
+			'maxTotalTimeInSeconds': '5400',
 		}
 		time = '5400'
 		payload = create_payload('onion soup', time=time)
+		self.assertEqual(expected_payload, payload)
+
+	# Test creating payload with multiple optional parameters
+	def test_multiple_optional_parameters(self):
+		expected_payload = {
+			'q': 'onion soup',
+			'allowedAllergy[]': 'Gluten-Free',
+			'maxTotalTimeInSeconds': '5400',
+		}
+		allergy = "Gluten-Free"
+		time = '5400'
+		payload = create_payload('onion soup', allergy=allergy, time=time)
+		self.assertEqual(expected_payload, payload)
+
+	# Test creating payload with multiple allergy parameters
+	def test_multiple_allergy_parameters(self):
+		expected_payload = {
+			'q': 'onion soup',
+			'allowedAllergy[]': ['Gluten-Free', 'Seafood-Free'],
+		}
+		allergy = ['Gluten-Free', 'Seafood-Free']
+		payload = create_payload('onion soup', allergy=allergy)
 		self.assertEqual(expected_payload, payload)
 
 
@@ -42,7 +63,7 @@ class TestPayloadCreation(unittest.TestCase):
 Test methods related to checking for successful search queries in API
 """
 class TestSearchSuccess(unittest.TestCase):
-	
+
 	# Test simple search for onion soup
 	def test_simple_search_api(self):
 		expected_simple_result = 200
@@ -66,7 +87,24 @@ class TestSearchSuccess(unittest.TestCase):
 		time_response = get_search_results(time_search_term, time=time)
 		self.assertEqual(expected_time_result, time_response.status_code)
 
+	# Test search with multiple optional parameters
+	def test_multiple_search_api(self):
+		expected_multiple_result = 200
+		multiple_search_term = "onion soup"
+		allergy = "Gluten-Free"
+		time = "5400"
+		multiple_response = get_search_results(multiple_search_term, allergy=allergy, time=time)
+		self.assertEqual(expected_multiple_result, multiple_response.status_code)
 
+	# Test search with multiple values for an optional parameter
+	def test_multiple_allergy_search_api(self):
+		expected_multiple_allergy_result = 200
+		multiple_allergy_search_term = "onion soup"
+		multiple_allergy = ["Gluten-Free", 'Seafood-Free']
+		multiple_allergy_response = get_search_results(multiple_allergy_search_term, allergy=multiple_allergy)
+		self.assertEqual(expected_multiple_allergy_result, multiple_allergy_response.status_code)
+
+	
 	# Test parsing search results and returning highest rated query
 
 if __name__ == '__main__':
