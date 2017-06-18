@@ -10,6 +10,21 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+ALLERGIES = []
+ALLERGIES_LIST = {
+    'dairy free': 'Dairy-Free',
+    'egg free': 'Egg-Free',
+    'peanut free': 'Peanut-free',
+    'tree nut free': 'Tree Nut-Free',
+    'gluten free': 'Gluten-Free',
+    'seafood free': 'Seafood-Free',
+    'sesame free': 'Sesame-Free',
+    'soy free': 'Soy-free',
+    'sulfite free': 'Sulfite-Free',
+    'wheat free': 'Wheat-Free'
+}
+RESTRICTIONS = []
+
 def get_slots(intent_request):
     """
     Called by find_recipe to get currently filled slots.
@@ -69,7 +84,6 @@ def build_validation_result(is_valid, violated_slot, message_content):
             "isValid": is_valid,
             "violatedSlot": violated_slot,
         }
-
     return {
         'isValid': is_valid,
         'violatedSlot': violated_slot,
@@ -77,50 +91,60 @@ def build_validation_result(is_valid, violated_slot, message_content):
     }
 
 
-def validate_find_recipe(recipe_type, serving_size, restrictions, recipe_time):
+def validate_restrictions(restriction):
     """
     Called by find_recipe to validate slot data of request.
     """
     # If a slot is null, validation fails and returns prompt to elicit slot
-    if recipe_type is None:
-        return build_validation_result(False,
-                                       'RecipeType',
-                                       'I did not understand, what kind of recipe do you need?')
-
-    if serving_size is None:
-        return build_validation_result(False,
-                                       'ServingSize', 'How many people does this need to feed?')
-
-    if restrictions is None:
+    if restriction != 'No' and restriction is not None:
+        if restriction in ALLERGIES_LIST:
+            ALLERGIES.append(ALLERGIES_LIST[restriction])
+        else:
+            RESTRICTIONS.append(restriction)
         return build_validation_result(False,
                                        'Restrictions',
-                                       'Are there any dietary restrictions I should know about?')
-
-    if recipe_time is None:
-        return build_validation_result(False,
-                                       'RecipeTime',
-                                       'How long should this take to make?')
-
+                                       'Are there any more dietary restrictions or allergies I should know about?')
     return build_validation_result(True, None, None)
+
+
+
+def parse_time(time_slot):
+    """
+    Utility function for converting Amazon duration values to seconds.
+    Doesn't work for values that include years, months, weeks.
+    """
+    convert = {
+        'D': lambda x: 24*60*60*x,
+        'H': lambda x: 60*60*x,
+        'M': lambda x: 60*x,
+        'S': lambda x: x
+    }
+    seconds = 0
+    for i, c in enumerate(time_slot):
+        if c.isdigit() and  (time_slot[i-1].isalpha() or i == 0):
+            if time_slot[i+1].isdigit():
+                seconds += convert[time_slot[i+2]](int(time_slot[i:i+2]))
+            else:
+                seconds += convert[time_slot[i+1]](int(c))
+        else:
+            pass
+    return seconds
+
+
+def parse_api_response(response):
+    return response
 
 
 def find_recipe(intent_request):
     """
     Called by dispatch to handle a recipe request intent.
     """
-    # Pull slots from recipe request
-    recipe_type = get_slots(intent_request)["RecipeType"]
-    serving_size = get_slots(intent_request)["ServingSize"]
-    restrictions = get_slots(intent_request)["Restrictions"]
-    recipe_time = get_slots(intent_request)["RecipeTime"]
     # Get invocation source
     source = intent_request['invocationSource']
-
     # If source is DialogCodeHook, validate our slots
     if source == 'DialogCodeHook':
         slots = get_slots(intent_request)
-
-        validation_result = validate_find_recipe(recipe_type, serving_size, restrictions, recipe_time)
+        validation_result = validate_restrictions(slots["Restrictions"])
         if not validation_result['isValid']:
             slots[validation_result['violatedSlot']] = None
             return elicit_slot(intent_request['sessionAttributes'],
@@ -129,40 +153,26 @@ def find_recipe(intent_request):
                                validation_result['violatedSlot'],
                                validation_result['message'])
 
-        # Possibly store extra info for Lex
-        # Store inside output_session_attributes dict with other session attributes
-        output_session_attributes = intent_request['sessionAttributes'] if intent_request['sessionAttributes'] is not None else {}
-
+        
         # Return attributes and slots back to bot for the next step
-        return delegate(output_session_attributes, get_slots(intent_request))
-
-
+        return delegate(intent_request['sessionAttributes'], get_slots(intent_request))
     # Right here is where we would need to make an API call to retrieve a recipe
     # For now just a simple response, will write template function later
-    # If no dietary restrictions, omit from response message
-    if restrictions == 'None':
-        message = 'Alright, here is a recipe for {}, that feeds {}'.format(recipe_type, serving_size)
-    else:
-        message = 'Alright, here is a recipe for {}, that feeds {}, and is safe for {}'.format(recipe_type, serving_size, restrictions)
-
     # Fulfill recipe intent and returned adjusted recipe
+    response = 'placeholdin it up over here'
     return close(intent_request['sessionAttributes'],
                  'Fulfilled',
-                 {'contentType': 'PlainText', 'content': message})
+                 {'contentType': 'PlainText', 'content': parse_api_response(response)})
 
 def dispatch(intent_request):
     """
     Called when the user specifies an intent for this bot.
     """
-
     logger.debug('dispatch userId={}, intentName={}'.format(intent_request['userId'], intent_request['currentIntent']['name']))
-
     intent_name = intent_request['currentIntent']['name']
-
     # Dispatch to your bot's intent handlers
     if intent_name == 'FindRecipe':
         return find_recipe(intent_request)
-
     raise Exception('Intent with name ' + intent_name + ' not supported')
 
 
@@ -173,5 +183,4 @@ def handler(event, contex):
     # Print request contents
     print("Received recipe request: " + json.dumps(event, indent=2))
     logger.debug('event.bot.name={}'.format(event['bot']['name']))
-
     return dispatch(event)
