@@ -152,11 +152,11 @@ class TestRecipeBot(unittest.TestCase):
         forty_five_seconds = 'PT45S'
         five_hours_ten_minutes = 'PT5H10M'
 
-        self.assertEqual(600, parse_time(ten_minutes))
-        self.assertEqual(18000, parse_time(five_hours))
-        self.assertEqual(259200, parse_time(three_days))
-        self.assertEqual(45, parse_time(forty_five_seconds))
-        self.assertEqual(18600, parse_time(five_hours_ten_minutes))
+        self.assertEqual('600', parse_time(ten_minutes))
+        self.assertEqual('18000', parse_time(five_hours))
+        self.assertEqual('259200', parse_time(three_days))
+        self.assertEqual('45', parse_time(forty_five_seconds))
+        self.assertEqual('18600', parse_time(five_hours_ten_minutes))
 
     def test_find_recipe(self):
         intent = {

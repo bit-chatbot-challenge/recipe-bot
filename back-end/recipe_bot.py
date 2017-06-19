@@ -128,7 +128,7 @@ def parse_time(time_slot):
                 seconds += convert[time_slot[i+1]](int(c))
         else:
             pass
-    return seconds
+    return str(seconds)
 
 
 def parse_api_response(response):
