@@ -6,6 +6,8 @@ recipe Lex bot.
 from __future__ import print_function
 import json
 import logging
+import requests
+import api_functions
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)

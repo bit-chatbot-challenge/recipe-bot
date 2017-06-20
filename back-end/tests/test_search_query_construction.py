@@ -1,8 +1,9 @@
 """
-This is the test suite for methods related to querying the Yummly API.
+This is the test suite for methods related to creating search queries for the
+Yummly API.
 """
 import unittest
-from recipe_bot import get_search_results, create_payload
+from api_functions import get_search_results, create_payload
 
 """
 Test methods related to creating dictionary of query parameters as payload
