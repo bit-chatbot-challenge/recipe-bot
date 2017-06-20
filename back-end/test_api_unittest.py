@@ -11,7 +11,10 @@ class TestPayloadCreation(unittest.TestCase):
 
 	# Test creating basic request parameters as payload:
 	def test_create_basic_payload(self):
-		expected_payload = {'q': 'onion soup'}
+		expected_payload = {
+			'q': 'onion soup',
+			'maxResult': '1',
+		}
 		payload = create_payload('onion soup')
 		self.assertEqual(expected_payload, payload)
 
@@ -19,6 +22,7 @@ class TestPayloadCreation(unittest.TestCase):
 	def test_optional_allergy_parameter(self):
 		expected_payload = {
 			'q': 'onion soup',
+			'maxResult': '1',
 			'allowedAllergy[]': 'Gluten-Free',
 		}
 		allergy = "Gluten-Free"
@@ -29,6 +33,7 @@ class TestPayloadCreation(unittest.TestCase):
 	def test_optional_time_parameter(self):
 		expected_payload = {
 			'q': 'onion soup',
+			'maxResult': '1',
 			'maxTotalTimeInSeconds': '5400',
 		}
 		time = '5400'
@@ -39,6 +44,7 @@ class TestPayloadCreation(unittest.TestCase):
 	def test_multiple_optional_parameters(self):
 		expected_payload = {
 			'q': 'onion soup',
+			'maxResult': '1',
 			'allowedAllergy[]': 'Gluten-Free',
 			'maxTotalTimeInSeconds': '5400',
 		}
@@ -51,6 +57,7 @@ class TestPayloadCreation(unittest.TestCase):
 	def test_multiple_allergy_parameters(self):
 		expected_payload = {
 			'q': 'onion soup',
+			'maxResult': '1',
 			'allowedAllergy[]': ['Gluten-Free', 'Seafood-Free'],
 		}
 		allergy = ['Gluten-Free', 'Seafood-Free']
@@ -103,6 +110,12 @@ class TestSearchSuccess(unittest.TestCase):
 		multiple_allergy = ["Gluten-Free", 'Seafood-Free']
 		multiple_allergy_response = get_search_results(multiple_allergy_search_term, allergy=multiple_allergy)
 		self.assertEqual(expected_multiple_allergy_result, multiple_allergy_response.status_code)
+
+	# Test search returns single recipe
+	def test_single_recipe_return(self):
+		single_recipe_response = get_search_results("onion soup")
+		response = single_recipe_response.json()
+		self.assertEqual(1, len(response['matches']))
 
 	
 	# Test parsing search results and returning highest rated query

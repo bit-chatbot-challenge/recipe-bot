@@ -31,7 +31,6 @@ def elicit_slot(session_attributes, intent_name, slots, slot_to_elicit, message)
         }
     }
 
-
 def close(session_attributes, fulfillment_state, message):
     """
     Called by find_recipe to fulfill a recipe intent request.
@@ -163,7 +162,6 @@ def dispatch(intent_request):
         return find_recipe(intent_request)
 
     raise Exception('Intent with name ' + intent_name + ' not supported')
-
 
 """ --- Main handler --- """
 def handler(event, contex):
