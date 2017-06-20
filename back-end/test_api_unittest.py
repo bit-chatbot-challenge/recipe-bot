@@ -64,6 +64,17 @@ class TestPayloadCreation(unittest.TestCase):
 		payload = create_payload('onion soup', allergy=allergy)
 		self.assertEqual(expected_payload, payload)
 
+	# Test creating payload with excluded ingredient parameter
+	def test_excluded_ingredient_parameter(self):
+		expected_payload = {
+			'q': 'onion soup',
+			'maxResult': '1',
+			'excludedIngredient[]': 'thyme',
+		}
+		excluded_ingredient = 'thyme'
+		payload = create_payload('onion soup', excluded_ingredient=excluded_ingredient)
+		self.assertEqual(expected_payload, payload)
+
 
 
 """
