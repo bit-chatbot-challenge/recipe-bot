@@ -131,30 +131,32 @@ class TestRecipeBot(unittest.TestCase):
 
     def test_validate_find_recipe(self):
         expected = build_validation_result(False,
-                                           'RecipeType',
-                                           'I did not understand, what kind of recipe do you need?')
-        expected2 = build_validation_result(False,
-                                            'ServingSize',
-                                            'How many people does this need to feed?')
-        expected3 = build_validation_result(False,
                                             'Restrictions',
-                                            'Are there any dietary restrictions I should know about?')
-        expected4 = build_validation_result(False,
-                                            'RecipeTime',
-                                            'How long should this take to make?')
-        expected5 = build_validation_result(True, None, None)
-
-        test = validate_find_recipe(None, 10, None, None)
-        test2 = validate_find_recipe('Lasagna', None, None, None)
-        test3 = validate_find_recipe('Lasagna', 10, None, None)
-        test4 = validate_find_recipe('Lasagna', 10, 'Vegan', None)
-        test5 = validate_find_recipe('Lasagna', 10, 'Vegan', 20)
+                                            'Are there any more dietary restrictions or allergies I should know about?')
+        expected2 = build_validation_result(True, None, None)
+        test = validate_restrictions('gluten free')
+        test2 = validate_restrictions('No')
+        test3 = validate_restrictions('cheese')
 
         self.assertEqual(expected, test)
+        self.assertTrue('Gluten-Free' in ALLERGIES)
         self.assertEqual(expected2, test2)
-        self.assertEqual(expected3, test3)
-        self.assertEqual(expected4, test4)
-        self.assertEqual(expected5, test5)
+        self.assertEqual(expected, test3)
+        self.assertTrue('cheese' in RESTRICTIONS)
+
+
+    def test_parse_time(self):
+        ten_minutes = 'PT10M'
+        five_hours = 'PT5H'
+        three_days = 'P3D'
+        forty_five_seconds = 'PT45S'
+        five_hours_ten_minutes = 'PT5H10M'
+
+        self.assertEqual('600', parse_time(ten_minutes))
+        self.assertEqual('18000', parse_time(five_hours))
+        self.assertEqual('259200', parse_time(three_days))
+        self.assertEqual('45', parse_time(forty_five_seconds))
+        self.assertEqual('18600', parse_time(five_hours_ten_minutes))
 
     def test_find_recipe(self):
         intent = {
@@ -172,45 +174,6 @@ class TestRecipeBot(unittest.TestCase):
                 'test': 123
             }
         }
-
-        recipe_type = get_slots(intent)["RecipeType"]
-        serving_size = get_slots(intent)["ServingSize"]
-        restrictions = get_slots(intent)["Restrictions"]
-        recipe_time = get_slots(intent)["RecipeTime"]
-
-        message = 'Alright, here is a recipe for {}, that feeds {}, and is safe for {}'.format(
-                                                                                        recipe_type,
-                                                                                        serving_size,
-                                                                                        restrictions)
-        close_message = {'contentType': 'PlainText', 'content': message}
-        expected = close(intent['sessionAttributes'], 'Fulfilled', close_message)
-
-        self.assertEqual(expected, find_recipe(intent))
-
-        intent['currentIntent']['slots']['Restrictions'] = 'None'
-        message = 'Alright, here is a recipe for {}, that feeds {}'.format(recipe_type, serving_size)
-        close_message = {'contentType': 'PlainText', 'content': message}
-        expected = close(intent['sessionAttributes'], 'Fulfilled', close_message)
-
-        self.assertEqual(expected, find_recipe(intent))
-
-        intent['invocationSource'] = 'DialogCodeHook'
-        expected = delegate(intent['sessionAttributes'], get_slots(intent))
-
-        self.assertEqual(expected, find_recipe(intent))
-
-        intent['currentIntent']['slots']['Restrictions'] = None
-        validation_result = validate_find_recipe(recipe_type,
-                                                 serving_size,
-                                                 None,
-                                                 recipe_time)
-        expected = elicit_slot(intent['sessionAttributes'],
-                               intent['currentIntent']['name'],
-                               get_slots(intent),
-                               validation_result['violatedSlot'],
-                               validation_result['message'])
-
-        self.assertEqual(expected, find_recipe(intent))
 
     def test_dispatch(self):
         intent = {
