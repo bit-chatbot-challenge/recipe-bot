@@ -6,6 +6,8 @@ recipe Lex bot.
 from __future__ import print_function
 import json
 import logging
+import requests
+import api_functions
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -31,7 +33,6 @@ def get_slots(intent_request):
     """
     return intent_request['currentIntent']['slots']
 
-
 def elicit_slot(session_attributes, intent_name, slots, slot_to_elicit, message):
     """
     Called by find_recipe to elicit a missing slot from the user.
@@ -46,7 +47,6 @@ def elicit_slot(session_attributes, intent_name, slots, slot_to_elicit, message)
             'message': message
         }
     }
-
 
 def close(session_attributes, fulfillment_state, message):
     """
@@ -175,11 +175,13 @@ def dispatch(intent_request):
         return find_recipe(intent_request)
     raise Exception('Intent with name ' + intent_name + ' not supported')
 
-
+""" --- Main handler --- """
 def handler(event, contex):
     """
     Handle incoming recipe requests by passing event to dispatch function
     """
+    # Get search results
+
     # Print request contents
     print("Received recipe request: " + json.dumps(event, indent=2))
     logger.debug('event.bot.name={}'.format(event['bot']['name']))
