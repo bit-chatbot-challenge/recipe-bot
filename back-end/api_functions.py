@@ -4,6 +4,7 @@ This module contains the functionality needed to query the Yummly API.
 
 import requests
 import os
+import logging
 from collections import OrderedDict
 
 """ --- Constants ---"""
@@ -19,6 +20,7 @@ YUMMLY_PARAM_MAPPING = {
 	'time': 'maxTotalTimeInSeconds',
 	'excluded_ingredient': 'excludedIngredient[]',
 }
+
 
 """
 Method to add optional parameters to payload of parameters for search
@@ -49,3 +51,16 @@ def get_search_results(search_term, **options):
 	r = requests.get('http://api.yummly.com/v1/api/recipes', headers=HEADERS, params=payload)
 	r.connection.close()
 	return r
+
+"""
+Method to log events related to API functionality
+"""
+def log_api_event(keyword, search_term, **criteria):
+	if keyword == 'query':
+		base_log_message = 'Querying for ' + search_term + ' recipes'
+	if criteria:
+		log_message = base_log_message + ' with the following search criteria: ' + str(criteria)
+	else:
+		log_message = base_log_message
+	logging.debug(log_message)
+	return log_message
