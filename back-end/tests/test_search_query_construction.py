@@ -65,7 +65,8 @@ class TestPayloadCreation(unittest.TestCase):
 			'excludedIngredient[]': 'thyme',
 		}
 		excluded_ingredient = 'thyme'
-		payload = create_payload('onion soup', excluded_ingredient=excluded_ingredient)
+		payload = create_payload('onion soup', 
+								 excluded_ingredient=excluded_ingredient)
 		self.assertEqual(expected_payload, payload)
 
 
@@ -87,7 +88,8 @@ class TestSearchSuccess(unittest.TestCase):
 		expected_allergy_result = 200
 		allergy_search_term = "onion soup"
 		allergy = "Gluten-Free"
-		allergy_response = get_search_results(allergy_search_term, allergy=allergy)
+		allergy_response = get_search_results(allergy_search_term, 
+											  allergy=allergy)
 		self.assertEqual(expected_allergy_result, allergy_response.status_code)
 
 	# Test search with time parameter
@@ -104,20 +106,31 @@ class TestSearchSuccess(unittest.TestCase):
 		multiple_search_term = "onion soup"
 		allergy = "Gluten-Free"
 		time = "5400"
-		multiple_response = get_search_results(multiple_search_term, allergy=allergy, time=time)
-		self.assertEqual(expected_multiple_result, multiple_response.status_code)
+		multiple_response = get_search_results(multiple_search_term, 
+											   allergy=allergy, time=time)
+		self.assertEqual(expected_multiple_result, 
+						 multiple_response.status_code)
 
 	# Test search with multiple values for an optional parameter
 	def test_multiple_allergy_search_api(self):
 		expected_multiple_allergy_result = 200
 		multiple_allergy_search_term = "onion soup"
 		multiple_allergy = ["Gluten-Free", 'Seafood-Free']
-		multiple_allergy_response = get_search_results(multiple_allergy_search_term, allergy=multiple_allergy)
-		self.assertEqual(expected_multiple_allergy_result, multiple_allergy_response.status_code)
+		multiple_allergy_response = get_search_results(multiple_allergy_search_term,
+													   allergy=multiple_allergy)
+		self.assertEqual(expected_multiple_allergy_result, 
+						 multiple_allergy_response.status_code)
 
-
-	
-	# Test parsing search results and returning highest rated query
+	# Test search with exlcuded ingredient
+	def test_excluded_ingredient_search_api(self):
+		expect_excluded_result = 200
+		excluded_ingredient_search_term = "onion soup"
+		excluded_ingredient = 'thyme'
+		excluded_ingredient_response = get_search_results(excluded_ingredient_search_term, 
+														  excluded_ingredient=excluded_ingredient)
+		self.assertEqual(expect_excluded_result,
+						 excluded_ingredient_response.status_code)
+		
 
 if __name__ == '__main__':
 	unittest.main()
