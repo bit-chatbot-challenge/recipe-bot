@@ -36,9 +36,7 @@ def add_optional_parameters(params_dict, additional_params):
 Method to create payload of parameters for search
 """
 def create_payload(search_term, **options):
-	payload = {'q': search_term,
-			   'maxResult' : '1',
-	}
+	payload = { 'q': search_term }
 	if options:
 		payload = add_optional_parameters(payload, options)
 	return payload
