@@ -20,6 +20,8 @@ def mocked_response_query(keyword):
 		return MockResponse(None, 500)
 	elif keyword == 'rate limit':
 		return MockResponse(None, 409)
+	elif keyword == 'bad request':
+		return MockResponse(None, 400)
 
 
 """
@@ -36,6 +38,11 @@ class TestParseResults(unittest.TestCase):
 	def test_parse_rate_limit_response(self):
 		rate_limit_mock = mocked_response_query('rate limit')
 		self.assertEqual('rate limit exceeded', parse_search_results(rate_limit_mock))
+
+	# Test returning an error message for 400 response
+	def test_parse_bad_request_response(self):
+		bad_request_mock = mocked_response_query('bad request')
+		self.assertEqual('bad request', parse_search_results(bad_request_mock))
 
 
 		# server_error_mock = Mock(return_value={ 'criteria': { 'excludedIngredient': None, 

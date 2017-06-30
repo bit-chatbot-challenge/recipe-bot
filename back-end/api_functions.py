@@ -62,6 +62,9 @@ def parse_search_results(response):
 	elif response.status_code == 409:
 		log_api_event('rate limit')
 		return 'rate limit exceeded'
+	elif response.status_code == 400:
+		log_api_event('bad request')
+		return 'bad request'
 
 """
 Method to log events related to API functionality
@@ -79,4 +82,7 @@ def log_api_event(keyword, *search_term, **criteria):
 		logging.error(log_message)
 	elif keyword == 'rate limit':
 		log_message = 'Oops, our bot has exceeded the number of API calls in our plan'
+		logging.error(log_message)
+	elif keyword == 'bad request':
+		log_message = "We are submitting a bad request to the API"
 		logging.error(log_message)
