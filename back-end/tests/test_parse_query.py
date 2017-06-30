@@ -7,7 +7,7 @@ from unittest.mock import Mock
 from api_functions import parse_search_results
 
 """ Method to create mock data for parsing tests."""
-def mocked_response_query():
+def mocked_response_query(keyword):
 	class MockResponse:
 		def __init__(self, json_data, status_code):
 			self.json_data = json_data
@@ -16,7 +16,10 @@ def mocked_response_query():
 		def json(self):
 			return self.json_data
 
-	return MockResponse(None, 500)
+	if keyword == 'server error':
+		return MockResponse(None, 500)
+	elif keyword == 'rate limit':
+		return MockResponse(None, 409)
 
 
 """
@@ -26,8 +29,13 @@ class TestParseResults(unittest.TestCase):
 
 	# Test returning an error message for 500 response
 	def test_parse_server_error_response(self):
-		server_error_mock = mocked_response_query()
+		server_error_mock = mocked_response_query('server error')
 		self.assertEqual('server error', parse_search_results(server_error_mock))
+
+	# Test returning an error message for 409 response
+	def test_parse_rate_limit_response(self):
+		rate_limit_mock = mocked_response_query('rate limit')
+		self.assertEqual('rate limit exceeded', parse_search_results(rate_limit_mock))
 
 
 		# server_error_mock = Mock(return_value={ 'criteria': { 'excludedIngredient': None, 

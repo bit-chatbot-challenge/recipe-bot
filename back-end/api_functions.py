@@ -59,6 +59,9 @@ def parse_search_results(response):
 	if response.status_code == 500:
 		log_api_event('server error')
 		return 'server error'
+	elif response.status_code == 409:
+		log_api_event('rate limit')
+		return 'rate limit exceeded'
 
 """
 Method to log events related to API functionality
@@ -70,7 +73,10 @@ def log_api_event(keyword, *search_term, **criteria):
 			log_message = base_log_message + ' with the following search criteria: ' + str(criteria)
 		else:
 			log_message = base_log_message
+		logging.debug(log_message)
 	elif keyword == 'server error':
 		log_message = 'Yummly cannot complete request due to internal server error'
-	logging.debug(log_message)
-	return log_message
+		logging.error(log_message)
+	elif keyword == 'rate limit':
+		log_message = 'Oops, our bot has exceeded the number of API calls in our plan'
+		logging.error(log_message)
