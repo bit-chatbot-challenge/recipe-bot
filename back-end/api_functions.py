@@ -50,6 +50,15 @@ def get_search_results(search_term, **options):
 	r.connection.close()
 	return r
 
+
+"""
+Method to parse search results from Yummly API
+"""
+def parse_search_results(response):
+	print(response.status_code)
+	if response.status_code == 500:
+		return 'server error'
+
 """
 Method to log events related to API functionality
 """
