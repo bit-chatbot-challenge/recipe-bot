@@ -81,7 +81,6 @@ class TestSearchSuccess(unittest.TestCase):
 		expected_simple_result = 200
 		simple_search_term = "onion soup"
 		simple_response = get_search_results(simple_search_term)
-		print(simple_response.json())
 		self.assertEqual(expected_simple_result, simple_response.status_code)
 
 	# Test search with allergy parameter

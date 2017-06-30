@@ -48,6 +48,7 @@ def get_search_results(search_term, **options):
 	payload = create_payload(search_term, **options)
 	r = requests.get('http://api.yummly.com/v1/api/recipes', headers=HEADERS, params=payload)
 	r.connection.close()
+	log_api_event('query', search_term, **options)
 	return r
 
 
@@ -55,19 +56,21 @@ def get_search_results(search_term, **options):
 Method to parse search results from Yummly API
 """
 def parse_search_results(response):
-	print(response.status_code)
 	if response.status_code == 500:
+		log_api_event('server error')
 		return 'server error'
 
 """
 Method to log events related to API functionality
 """
-def log_api_event(keyword, search_term, **criteria):
+def log_api_event(keyword, *search_term, **criteria):
 	if keyword == 'query':
-		base_log_message = 'Querying for ' + search_term + ' recipes'
-	if criteria:
-		log_message = base_log_message + ' with the following search criteria: ' + str(criteria)
-	else:
-		log_message = base_log_message
+		base_log_message = 'Querying for ' + search_term[0] + ' recipes'
+		if criteria:
+			log_message = base_log_message + ' with the following search criteria: ' + str(criteria)
+		else:
+			log_message = base_log_message
+	elif keyword == 'server error':
+		log_message = 'Yummly cannot complete request due to internal server error'
 	logging.debug(log_message)
 	return log_message
