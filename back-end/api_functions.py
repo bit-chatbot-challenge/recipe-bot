@@ -53,7 +53,9 @@ def get_search_results(search_term, **options):
 
 
 """
-Method to parse search results from Yummly API
+Method to parse search results from Yummly API: if the response has a bad
+status code, log and return the error; if the response has a 200 status code,
+log and return the id of the first matching recipe
 """
 def parse_search_results(response):
 	if response.status_code == 500:
@@ -65,6 +67,9 @@ def parse_search_results(response):
 	elif response.status_code == 400:
 		log_api_event('bad request')
 		return 'bad request'
+	elif response.status_code == 200:
+		json_response = response.json()
+		print(json_response)
 
 """
 Method to log events related to API functionality
