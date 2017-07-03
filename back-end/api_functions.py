@@ -21,6 +21,10 @@ YUMMLY_PARAM_MAPPING = {
 	'excluded_ingredient': 'excludedIngredient[]',
 }
 
+BASE_API_URL = 'http://api.yummly.com/v1/api/recipes'
+
+BASE_URL = 'http://www.yummly.com/recipe/'
+
 
 """
 Method to add optional parameters to payload of parameters for search
@@ -46,7 +50,7 @@ Method to query Yummly API for recipe based on received parameters
 """
 def get_search_results(search_term, **options):
 	payload = create_payload(search_term, **options)
-	r = requests.get('http://api.yummly.com/v1/api/recipes', headers=HEADERS, params=payload)
+	r = requests.get(BASE_API_URL, headers=HEADERS, params=payload)
 	r.connection.close()
 	log_api_event('query', search_term, **options)
 	return r
@@ -74,6 +78,13 @@ def parse_search_results(response):
 		return recipe_id
 
 """
+Method to create URL for user to view in browser
+"""
+def create_url_for_user(recipe_id):
+	log_api_event('generate url', recipe_id)
+	return BASE_URL + recipe_id
+
+"""
 Method to log events related to API functionality
 """
 def log_api_event(keyword, *recipe_term, **criteria):
@@ -95,4 +106,7 @@ def log_api_event(keyword, *recipe_term, **criteria):
 		logging.error(log_message)
 	elif keyword == 'parsed result':
 		log_message = 'Found matching recipe with id ' + recipe_term[0]
+		logging.debug(log_message)
+	elif keyword == 'generate url':
+		log_message = ' Generating url for recipe with id ' + recipe_term[0]
 		logging.debug(log_message)
