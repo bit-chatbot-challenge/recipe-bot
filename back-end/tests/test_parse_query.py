@@ -3,36 +3,39 @@ This is the test suite for methods related to parsing search queries for the
 Yummly API.
 """
 import unittest
-from unittest import mock
+from unittest.mock import Mock
 from api_functions import parse_search_results
 
-""" Method to create mock data for parsing tests."""
-def mocked_response_query(keyword):
-	class MockResponse:
-		def __init__(self, json_data, status_code):
-			self.json = json_data
-			self.status_code = status_code
+"""
+Test methods related to parsing error results of search queries in Yummly API
+"""
+class TestParseErrorResults(unittest.TestCase):
 
-		def json(self):
-			return self.json
+	# Test returning an error message for 500 response
+	def test_parse_server_error_response(self):
+		mock_response = Mock(status_code=500)
+		self.assertEqual('server error', parse_search_results(mock_response))
 
-	if keyword == 'server error':
-		return MockResponse(None, 500)
-	elif keyword == 'rate limit':
-		return MockResponse(None, 409)
-	elif keyword == 'bad request':
-		return MockResponse(None, 400)
+	# Test returning an error message for 409 response
+	def test_parse_rate_limit_response(self):
+		mock_response = Mock(status_code=409)
+		self.assertEqual('rate limit exceeded', parse_search_results(mock_response))
 
-def mocked_response():
-	class MockResponse:
-		def __init__(self, json_data, status_code):
-			self.json = json_data
-			self.status_code = status_code
+	# Test returning an error message for 400 response
+	def test_parse_bad_request_response(self):
+		mock_response = Mock(status_code=400)
+		self.assertEqual('bad request', parse_search_results(mock_response))
 
-		def json(self):
-			return self.json
 
-	mock_json_data = { 'criteria': { 'excludedIngredient': None, 
+"""
+Test method related to parsing successful results of search queries in Yummly
+API
+"""
+class TestParseSuccessResults(unittest.TestCase):
+
+	# Test parsing a recipe match for 200 response
+	def test_parse_success_response(self):
+		mock_json_data = { 'criteria': { 'excludedIngredient': None, 
 										 'q': 'onion soup', 
 										 'allowedIngredient': None
 									   }, 
@@ -58,42 +61,10 @@ def mocked_response():
 										  }, 
 						   'facetCounts': {}}
 
-	return MockResponse(mock_json_data, 200)
-
-
-"""
-Test methods related to parsing error results of search queries in Yummly API
-"""
-class TestParseErrorResults(unittest.TestCase):
-
-	# Test returning an error message for 500 response
-	def test_parse_server_error_response(self):
-		server_error_mock = mocked_response_query('server error')
-		self.assertEqual('server error', parse_search_results(server_error_mock))
-
-	# Test returning an error message for 409 response
-	def test_parse_rate_limit_response(self):
-		rate_limit_mock = mocked_response_query('rate limit')
-		self.assertEqual('rate limit exceeded', parse_search_results(rate_limit_mock))
-
-	# Test returning an error message for 400 response
-	def test_parse_bad_request_response(self):
-		bad_request_mock = mocked_response_query('bad request')
-		self.assertEqual('bad request', parse_search_results(bad_request_mock))
-
-
-"""
-Test method related to parsing successful results of search queries in Yummly
-API
-"""
-class TestParseSuccessResults(unittest.TestCase):
-
-	# Test returning a recipe match for 200 response
-	request_mock = mocked_response()
-	@mock.patch.object('api_functions.requests.Response', 'json', return_value=request_mock.json())
-	def test_parse_success_response(self):
+		mock_response = Mock(status_code=200)
+		mock_response.json.return_value = mock_json_data
 		expected_recipe_id = 'Easy-French-Onion-Soup-2038937'
-		self.assertEqual(expected_recipe_id, parse_search_results(request_mock))
+		self.assertEqual(expected_recipe_id, parse_search_results(mock_response))
 
 
 if __name__ == '__main__':

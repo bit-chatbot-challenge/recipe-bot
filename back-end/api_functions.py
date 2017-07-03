@@ -69,14 +69,16 @@ def parse_search_results(response):
 		return 'bad request'
 	elif response.status_code == 200:
 		json_response = response.json()
-		print(json_response)
+		recipe_id = json_response['matches'][0]['id']
+		log_api_event('parsed result', recipe_id)
+		return recipe_id
 
 """
 Method to log events related to API functionality
 """
-def log_api_event(keyword, *search_term, **criteria):
+def log_api_event(keyword, *recipe_term, **criteria):
 	if keyword == 'query':
-		base_log_message = 'Querying for ' + search_term[0] + ' recipes'
+		base_log_message = 'Querying for ' + recipe_term[0] + ' recipes'
 		if criteria:
 			log_message = base_log_message + ' with the following search criteria: ' + str(criteria)
 		else:
@@ -91,3 +93,6 @@ def log_api_event(keyword, *search_term, **criteria):
 	elif keyword == 'bad request':
 		log_message = "We are submitting a bad request to the API"
 		logging.error(log_message)
+	elif keyword == 'parsed result':
+		log_message = 'Found matching recipe with id ' + recipe_term[0]
+		logging.debug(log_message)
