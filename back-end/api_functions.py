@@ -8,9 +8,14 @@ import logging
 from collections import OrderedDict
 
 """ --- Constants ---"""
-HEADERS = OrderedDict({
+HEADERS  = OrderedDict({
 	'X-Yummly-App-ID': os.environ["AWS_YUMMLY_APP_ID"],
 	'X-Yummly-App-Key': os.environ['AWS_YUMMLY_APP_KEY'],
+})
+
+AUTH_PARAMETERS = OrderedDict({
+	'_app_id': os.environ["AWS_YUMMLY_APP_ID"],
+	'_app_key': os.environ['AWS_YUMMLY_APP_KEY'],
 })
 
 OPTIONAL_PARAMETERS = ['allergy', 'time', 'excluded_ingredient']
@@ -21,9 +26,11 @@ YUMMLY_PARAM_MAPPING = {
 	'excluded_ingredient': 'excludedIngredient[]',
 }
 
-BASE_API_URL = 'http://api.yummly.com/v1/api/recipes'
+BASE_API_SEARCH_URL = 'http://api.yummly.com/v1/api/recipes'
 
 BASE_URL = 'http://www.yummly.com/recipe/'
+
+BASE_API_GET_URL = 'http://api.yummly.com/v1/api/recipe/'
 
 
 """
@@ -49,10 +56,10 @@ def create_payload(search_term, **options):
 Method to query Yummly API for recipe based on received parameters
 """
 def get_search_results(search_term, **options):
-	payload = create_payload(search_term, **options)
-	r = requests.get(BASE_API_URL, headers=HEADERS, params=payload)
-	r.connection.close()
 	log_api_event('query', search_term, **options)
+	payload = create_payload(search_term, **options)
+	r = requests.get(BASE_API_SEARCH_URL, headers=HEADERS, params=payload)
+	r.connection.close()
 	return r
 
 
@@ -85,11 +92,43 @@ def create_url_for_user(recipe_id):
 	return BASE_URL + recipe_id
 
 """
+Method to get recipe based on recipe id
+"""
+def get_recipe(recipe_id):
+	log_api_event('get recipe', recipe_id)
+	recipe_base_url = BASE_API_GET_URL + recipe_id
+	r = requests.get(recipe_base_url, params=AUTH_PARAMETERS)
+	r.connection.close()
+	return r
+
+"""
+Method to get ingredients list for a recipe
+"""
+def get_ingredients(recipe_response):
+	return True
+	# if response.status_code == 500:
+	# 	log_api_event('server error')
+	# 	return 'server error'
+	# elif response.status_code == 409:
+	# 	log_api_event('rate limit')
+	# 	return 'rate limit exceeded'
+	# elif response.status_code == 400:
+	# 	log_api_event('bad request')
+	# 	return 'bad request'
+
+"""
+Method to get ingredients list and servings for a recipe
+"""
+def get_ingredients_and_servings(recipe_id):
+	# ingredients_list = get_ingredients(r)
+	return True, True
+
+"""
 Method to log events related to API functionality
 """
-def log_api_event(keyword, *recipe_term, **criteria):
+def log_api_event(keyword, *term, **criteria):
 	if keyword == 'query':
-		base_log_message = 'Querying for ' + recipe_term[0] + ' recipes'
+		base_log_message = 'Querying for ' + term[0] + ' recipes'
 		if criteria:
 			log_message = base_log_message + ' with the following search criteria: ' + str(criteria)
 		else:
@@ -105,8 +144,11 @@ def log_api_event(keyword, *recipe_term, **criteria):
 		log_message = "We are submitting a bad request to the API"
 		logging.error(log_message)
 	elif keyword == 'parsed result':
-		log_message = 'Found matching recipe with id ' + recipe_term[0]
+		log_message = 'Found matching recipe with id ' + term[0]
 		logging.debug(log_message)
 	elif keyword == 'generate url':
-		log_message = ' Generating url for recipe with id ' + recipe_term[0]
+		log_message = 'Generating url for recipe with id ' + term[0]
+		logging.debug(log_message)
+	elif keyword == 'get recipe':
+		log_message = 'Getting details for recipe with id ' + term[0]
 		logging.debug(log_message)
