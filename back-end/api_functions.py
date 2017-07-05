@@ -106,6 +106,7 @@ def get_recipe(recipe_id):
 Method to get ingredients list for a recipe
 """
 def get_scaled_ingredients(recipe_response, desired_servings):
+	log_api_event('scaling')
 	ingredients = recipe_response['ingredientLines']
 	original_servings = recipe_response['numberOfServings']
 	scaled_ingredients = []
@@ -160,4 +161,7 @@ def log_api_event(keyword, *term, **criteria):
 		logging.debug(log_message)
 	elif keyword == 'get recipe':
 		log_message = 'Getting details for recipe with id ' + term[0]
+		logging.debug(log_message)
+	elif keyword == 'scaling':
+		log_message = 'Getting and scaling recipe ingredients'
 		logging.debug(log_message)
