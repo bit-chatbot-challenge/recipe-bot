@@ -65,11 +65,13 @@ def get_search_results(search_term, **options):
 
 
 """
-Method to parse search results from Yummly API: if the response has a bad
-status code, log and return the error; if the response has a 200 status code,
-log and return the id of the first matching recipe
+Method to parse response from Yummly API: if the response has a bad
+status code, log and return the error; if the response has a 200 status code 
+and the keyword is 'search', log and return the id of the first matching
+recipe; if the response has a 200 status code adn the keyword is 'recipe', log
+and return the response body
 """
-def parse_search_results(response):
+def parse_response(keyword, response):
 	if response.status_code == 500:
 		log_api_event('server error')
 		return 'server error'
@@ -80,17 +82,21 @@ def parse_search_results(response):
 		log_api_event('bad request')
 		return 'bad request'
 	elif response.status_code == 200:
-		json_response = response.json()
-		recipe_id = json_response['matches'][0]['id']
-		log_api_event('parsed result', recipe_id)
-		return recipe_id
+		if keyword == 'search':
+			json_response = response.json()
+			recipe_id = json_response['matches'][0]['id']
+			log_api_event('parsed search result', recipe_id)
+			return recipe_id
+		elif keyword == 'recipe':
+			log_api_event('parsed recipe result')
+			return response.json()
 
 """
 Method to create URL for user to view in browser
 """
-def create_url_for_user(recipe_id):
-	log_api_event('generate url', recipe_id)
-	return BASE_URL + recipe_id
+def get_recipe_url(recipe_response):
+	log_api_event('retrieve url')
+	return recipe_response['source']['sourceRecipeUrl']
 
 """
 Method to get recipe based on recipe id
@@ -121,23 +127,19 @@ def get_scaled_ingredients(recipe_response, desired_servings):
 Method to get name of a recipe
 """
 def get_recipe_name(recipe_response):
+	log_api_event('retrieve name')
 	return recipe_response['name']
-	# if response.status_code == 500:
-	# 	log_api_event('server error')
-	# 	return 'server error'
-	# elif response.status_code == 409:
-	# 	log_api_event('rate limit')
-	# 	return 'rate limit exceeded'
-	# elif response.status_code == 400:
-	# 	log_api_event('bad request')
-	# 	return 'bad request'
-
 """
-Method to get ingredients list and servings for a recipe
+Method to get details of a recipe: returns name, list of scaled ingredients, 
+and recipe URL
 """
-def get_ingredients_and_servings(recipe_id):
-	# ingredients_list = get_ingredients(r)
-	return True, True
+def get_recipe_details(recipe_response, desired_servings):
+	log_api_event('get recipe details')
+	details = {}
+	details['name'] = get_recipe_name(recipe_response)
+	details['scaled_ingredients'] = get_scaled_ingredients(recipe_response, desired_servings)
+	details['recipe_url'] = get_recipe_url(recipe_response)
+	return details
 
 """
 Method to log events related to API functionality
@@ -159,15 +161,23 @@ def log_api_event(keyword, *term, **criteria):
 	elif keyword == 'bad request':
 		log_message = "We are submitting a bad request to the API"
 		logging.error(log_message)
-	elif keyword == 'parsed result':
+	elif keyword == 'parsed search result':
 		log_message = 'Found matching recipe with id ' + term[0]
 		logging.debug(log_message)
-	elif keyword == 'generate url':
-		log_message = 'Generating url for recipe with id ' + term[0]
+	elif keyword == 'retrieve url':
+		log_message = 'Retrieving url for recipe'
 		logging.debug(log_message)
 	elif keyword == 'get recipe':
-		log_message = 'Getting details for recipe with id ' + term[0]
+		log_message = 'Getting recipe with id ' + term[0]
+	elif keyword == 'get recipe details':
+		log_message = 'Getting details for recipe'
 		logging.debug(log_message)
 	elif keyword == 'scaling':
 		log_message = 'Getting and scaling recipe ingredients'
+		logging.debug(log_message)
+	elif keyword == 'retreive name':
+		log_message = 'Getting recipe name'
+		logging.debug(log_message)
+	elif keyword == 'parsed recipe result':
+		log_message = 'Successfuly retreived recipe'
 		logging.debug(log_message)
