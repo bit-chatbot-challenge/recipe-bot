@@ -116,6 +116,12 @@ def get_scaled_ingredients(recipe_response, desired_servings):
 		scaled_quantity = (desired_servings/original_servings)*int(quantity)
 		scaled_ingredients.append(str(scaled_quantity) + ' ' + unit)
 	return scaled_ingredients
+
+"""
+Method to get name of a recipe
+"""
+def get_recipe_name(recipe_response):
+	return recipe_response['name']
 	# if response.status_code == 500:
 	# 	log_api_event('server error')
 	# 	return 'server error'

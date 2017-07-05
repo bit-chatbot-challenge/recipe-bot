@@ -5,7 +5,7 @@ API and returning URLs and scaled ingredient list
 
 import unittest
 from api_functions import create_url_for_user, get_scaled_ingredients
-from api_functions import get_recipe
+from api_functions import get_recipe, get_recipe_name
 
 """
 Test method related to creating URL to return to user
@@ -36,27 +36,27 @@ class TestGetRecipeDetails(unittest.TestCase):
 
 	def setUp(self):
 		self.mock_response = { 'numberOfServings': 4, 
-		  				  'rating': 3, 
-		  				  'flavors': {}, 
-		  				  'ingredientLines': [ '3 tbsps butter', 
-		  					   				   '3 medium onions, thinly sliced', 
-		  					   				   '1 package McCormick® Au Jus Gravy Mix', 
-		  					   				   '3 cups water' ], 
-		  				  'yield': None, 
-		  				  'name': 'Easy French Onion Soup', 
-		  				  'totalTimeInSeconds': 2100, 
-		  				  'source': { 'sourceDisplayName': 'McCormick', 
-		  			  				  'sourceRecipeUrl': 'https://www.mccormick.com/recipes/soups-stews/easy-french-onion-soup', 
-		  			  				  'sourceSiteUrl': 'http://www.mccormick.com' }, 
-		  				  'nutritionEstimates': [ { 'unit': {'pluralAbbreviation': 'kcal', 
-		  									 				 'plural': 'calories', 
-		  									 				 'id': 'fea252f8-9888-4365-b005-e2c63ed3a776', 
-		  									 				 'name': 'calorie', 
-		  									 				 'decimal': True, 
-		  									 				 'abbreviation': 'kcal'}, 
-		  											'description': None, 
-		  											'value': 80.0, 
-		  											'attribute': 'FAT_KCAL' },
+		  				  	   'rating': 3, 
+		  				  	   'flavors': {}, 
+		  				  	   'ingredientLines': [ '3 tbsps butter', 
+		  					   				   		'3 medium onions, thinly sliced', 
+		  					   				   		'1 package McCormick® Au Jus Gravy Mix', 
+		  					   				   		'3 cups water' ], 
+		  				  	   'yield': None, 
+		  				  	   'name': 'Easy French Onion Soup', 
+		  				  	   'totalTimeInSeconds': 2100, 
+		  				  	   'source': { 'sourceDisplayName': 'McCormick', 
+		  			  				       'sourceRecipeUrl': 'https://www.mccormick.com/recipes/soups-stews/easy-french-onion-soup', 
+		  			  				  	   'sourceSiteUrl': 'http://www.mccormick.com' }, 
+		  				  	   'nutritionEstimates': [ { 'unit': {'pluralAbbreviation': 'kcal', 
+		  									 				 	  'plural': 'calories', 
+		  									 				 	  'id': 'fea252f8-9888-4365-b005-e2c63ed3a776', 
+		  									 				 	  'name': 'calorie', 
+		  									 				 	  'decimal': True, 
+		  									 				 	  'abbreviation': 'kcal'}, 
+		  												'description': None, 
+		  												'value': 80.0, 
+		  												'attribute': 'FAT_KCAL' },
 		  						  				  { 'unit': { 'pluralAbbreviation': 'grams', 
 		  						  			  				  'plural': 'grams', 
 		  						  			  				  'id': '12485d26-6e69-102c-9a8a-0030485841f8', 
@@ -339,6 +339,13 @@ class TestGetRecipeDetails(unittest.TestCase):
 		desired_servings = 12
 		scaled_ingredients_list = get_scaled_ingredients(self.mock_response, desired_servings)
 		self.assertEqual(expected_ingredients_list, scaled_ingredients_list)
+
+	# Test getting the name of a recipe
+	def test_get_name(self):
+		expected_name = 'Easy French Onion Soup'
+		name = get_recipe_name(self.mock_response)
+		self.assertEqual(expected_name, name)
+
 		# self.assertEqual(expected_ingredients_list, actual_ingredients)
 		# self.assertEqual(expected_servings, actual_servings)
 
