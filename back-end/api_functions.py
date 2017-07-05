@@ -5,6 +5,7 @@ This module contains the functionality needed to query the Yummly API.
 import requests
 import os
 import logging
+import re
 from collections import OrderedDict
 
 """ --- Constants ---"""
@@ -104,8 +105,16 @@ def get_recipe(recipe_id):
 """
 Method to get ingredients list for a recipe
 """
-def get_ingredients(recipe_response):
-	return True
+def get_scaled_ingredients(recipe_response, desired_servings):
+	ingredients = recipe_response['ingredientLines']
+	original_servings = recipe_response['numberOfServings']
+	scaled_ingredients = []
+	for ingredient in ingredients:
+		quantity = re.match('\d+', ingredient).group()
+		unit = re.sub('\s', '', re.split('\d+', ingredient)[1], count=1)
+		scaled_quantity = (desired_servings/original_servings)*int(quantity)
+		scaled_ingredients.append(str(scaled_quantity) + ' ' + unit)
+	return scaled_ingredients
 	# if response.status_code == 500:
 	# 	log_api_event('server error')
 	# 	return 'server error'
