@@ -7,7 +7,8 @@ import os
 import logging
 import re
 from collections import OrderedDict
-from apierror import APIError
+from request_error import RequestError
+from no_match_error import NoMatchError
 
 """ --- Constants ---"""
 HEADERS  = OrderedDict({
@@ -76,16 +77,19 @@ def parse_response(keyword, response):
 	if response.status_code == 200:
 		if keyword == 'search':
 			json_response = response.json()
-			recipe_id = json_response['matches'][0]['id']
-			log_api_event('parsed search result', recipe_id)
+			if not json_response['matches']:
+				search_term = json_response['criteria']['q']
+				del json_response['criteria']['q']
+				raise NoMatchError(search_term, **json_response['criteria'])
+			else:
+				recipe_id = json_response['matches'][0]['id']
+				log_api_event('parsed search result', recipe_id)
 			return recipe_id
 		elif keyword == 'recipe':
 			log_api_event('parsed recipe result')
 			return response.json()
 	else:
-		error = APIError(response.status_code)
-		log_api_error(error.message())
-		raise error
+		raise RequestError(response.status_code)
 
 """
 Method to create URL for user to view in browser
@@ -142,9 +146,15 @@ Wrapper method to search API and get recipe details based on provided info
 """
 def get_recipe_info(search_term, desired_servings):
 	search_response = get_search_results(search_term)
-	# try:
-	# 	parsed_search_response = parse_response('search', search_response)
-	# except:
+	try:
+		parsed_search_response = parse_response('search', search_response)
+	except RequestError as request_err:
+		log_api_error(request_err.message())
+		raise request_err
+	except NoMatchError as match_err:
+		log_api_error(match_err.message())
+		raise match_err
+
 	return True
 
 """
