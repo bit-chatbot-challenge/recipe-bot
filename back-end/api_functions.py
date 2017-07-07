@@ -31,9 +31,15 @@ YUMMLY_PARAM_MAPPING = {
 
 BASE_API_SEARCH_URL = 'http://api.yummly.com/v1/api/recipes'
 
-BASE_URL = 'http://www.yummly.com/recipe/'
-
 BASE_API_GET_URL = 'http://api.yummly.com/v1/api/recipe/'
+
+LOG_MESSAGE_MAPPING = {
+	'retrieve url': 'Retrieving url for recipe',
+	'get recipe details': 'Getting details for recipe',
+	'scaling': 'Getting and scaling recipe ingredients',
+	'retreive name': 'Getting recipe name',
+	'parsed recipe result': 'Successfuly retreived recipe',
+}
 
 
 """
@@ -178,27 +184,13 @@ def log_api_event(keyword, *term, **criteria):
 			log_message = base_log_message + ' with the following search criteria: ' + str(criteria)
 		else:
 			log_message = base_log_message
-		logging.debug(log_message)
 	elif keyword == 'parsed search result':
 		log_message = 'Found matching recipe with id ' + term[0]
-		logging.debug(log_message)
-	elif keyword == 'retrieve url':
-		log_message = 'Retrieving url for recipe'
-		logging.debug(log_message)
 	elif keyword == 'get recipe':
 		log_message = 'Getting recipe with id ' + term[0]
-	elif keyword == 'get recipe details':
-		log_message = 'Getting details for recipe'
-		logging.debug(log_message)
-	elif keyword == 'scaling':
-		log_message = 'Getting and scaling recipe ingredients'
-		logging.debug(log_message)
-	elif keyword == 'retreive name':
-		log_message = 'Getting recipe name'
-		logging.debug(log_message)
-	elif keyword == 'parsed recipe result':
-		log_message = 'Successfuly retreived recipe'
-		logging.debug(log_message)
+	else:
+		log_message = LOG_MESSAGE_MAPPING[keyword]
+	logging.debug(log_message)
 
 """
 Method to log errors related to API functionality
