@@ -92,13 +92,6 @@ def parse_response(keyword, response):
 		raise RequestError(response.status_code)
 
 """
-Method to create URL for user to view in browser
-"""
-def get_recipe_url(recipe_response):
-	log_api_event('retrieve url')
-	return recipe_response['source']['sourceRecipeUrl']
-
-"""
 Method to get recipe based on recipe id
 """
 def get_recipe(recipe_id):
@@ -109,6 +102,13 @@ def get_recipe(recipe_id):
 	return r
 
 """
+Method to get name of a recipe
+"""
+def get_recipe_name(recipe_response):
+	log_api_event('retrieve name')
+	return recipe_response['name']
+
+"""
 Method to get ingredients list for a recipe
 """
 def get_scaled_ingredients(recipe_response, desired_servings):
@@ -117,18 +117,22 @@ def get_scaled_ingredients(recipe_response, desired_servings):
 	original_servings = recipe_response['numberOfServings']
 	scaled_ingredients = []
 	for ingredient in ingredients:
-		quantity = re.match('\d+', ingredient).group()
-		unit = re.sub('\s', '', re.split('\d+', ingredient)[1], count=1)
-		scaled_quantity = (desired_servings/original_servings)*int(quantity)
-		scaled_ingredients.append(str(scaled_quantity) + ' ' + unit)
+		if not re.match('\d+', ingredient):
+			scaled_ingredients.append(ingredient)
+		else:
+			quantity = re.match('\d+', ingredient).group()
+			unit = re.sub('\s', '', re.split('\d+', ingredient)[1], count=1)
+			scaled_quantity = (desired_servings/original_servings)*int(quantity)
+			scaled_ingredients.append(str(scaled_quantity) + ' ' + unit)
 	return scaled_ingredients
 
 """
-Method to get name of a recipe
+Method to create URL for user to view in browser
 """
-def get_recipe_name(recipe_response):
-	log_api_event('retrieve name')
-	return recipe_response['name']
+def get_recipe_url(recipe_response):
+	log_api_event('retrieve url')
+	return recipe_response['source']['sourceRecipeUrl']
+
 """
 Method to get details of a recipe: returns name, list of scaled ingredients, 
 and recipe URL
@@ -141,21 +145,28 @@ def get_recipe_details(recipe_response, desired_servings):
 	details['recipe_url'] = get_recipe_url(recipe_response)
 	return details
 
+
 """
 Wrapper method to search API and get recipe details based on provided info
 """
 def get_recipe_info(search_term, desired_servings):
 	search_response = get_search_results(search_term)
 	try:
-		parsed_search_response = parse_response('search', search_response)
+		matching_recipe_id = parse_response('search', search_response)
 	except RequestError as request_err:
 		log_api_error(request_err.message())
 		raise request_err
 	except NoMatchError as match_err:
 		log_api_error(match_err.message())
 		raise match_err
-
-	return True
+	recipe_response = get_recipe(matching_recipe_id)
+	try:
+		matching_recipe = parse_response('recipe', recipe_response)
+	except RequestError as request_err:
+		log_api_error(request_err.message())
+		raise request_err
+	matching_recipe_details = get_recipe_details(matching_recipe, desired_servings)
+	return matching_recipe_details
 
 """
 Method to log events related to API functionality
