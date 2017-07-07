@@ -7,6 +7,7 @@ import os
 import logging
 import re
 from collections import OrderedDict
+from apierror import APIError
 
 """ --- Constants ---"""
 HEADERS  = OrderedDict({
@@ -37,12 +38,12 @@ BASE_API_GET_URL = 'http://api.yummly.com/v1/api/recipe/'
 """
 Method to add optional parameters to payload of parameters for search
 """
-def add_optional_parameters(params_dict, additional_params):
+def add_optional_parameters(payload, additional_params):
 	for option in OPTIONAL_PARAMETERS:
 		if option in additional_params:
 			api_param_name = YUMMLY_PARAM_MAPPING[option]
-			params_dict[api_param_name] = additional_params[option]
-	return params_dict
+			payload[api_param_name] = additional_params[option]
+	return payload
 
 """
 Method to create payload of parameters for search
@@ -65,23 +66,14 @@ def get_search_results(search_term, **options):
 
 
 """
-Method to parse response from Yummly API: if the response has a bad
+Method to parse response from Yummly API: if the response has a non 200
 status code, log and return the error; if the response has a 200 status code 
 and the keyword is 'search', log and return the id of the first matching
-recipe; if the response has a 200 status code adn the keyword is 'recipe', log
+recipe; if the response has a 200 status code and the keyword is 'recipe', log
 and return the response body
 """
 def parse_response(keyword, response):
-	if response.status_code == 500:
-		log_api_event('server error')
-		return 'server error'
-	elif response.status_code == 409:
-		log_api_event('rate limit')
-		return 'rate limit exceeded'
-	elif response.status_code == 400:
-		log_api_event('bad request')
-		return 'bad request'
-	elif response.status_code == 200:
+	if response.status_code == 200:
 		if keyword == 'search':
 			json_response = response.json()
 			recipe_id = json_response['matches'][0]['id']
@@ -90,6 +82,10 @@ def parse_response(keyword, response):
 		elif keyword == 'recipe':
 			log_api_event('parsed recipe result')
 			return response.json()
+	else:
+		error = APIError(response.status_code)
+		log_api_error(error.message())
+		raise error
 
 """
 Method to create URL for user to view in browser
@@ -142,6 +138,16 @@ def get_recipe_details(recipe_response, desired_servings):
 	return details
 
 """
+Wrapper method to search API and get recipe details based on provided info
+"""
+def get_recipe_info(search_term, desired_servings):
+	search_response = get_search_results(search_term)
+	# try:
+	# 	parsed_search_response = parse_response('search', search_response)
+	# except:
+	return True
+
+"""
 Method to log events related to API functionality
 """
 def log_api_event(keyword, *term, **criteria):
@@ -152,15 +158,6 @@ def log_api_event(keyword, *term, **criteria):
 		else:
 			log_message = base_log_message
 		logging.debug(log_message)
-	elif keyword == 'server error':
-		log_message = 'Yummly cannot complete request due to internal server error'
-		logging.error(log_message)
-	elif keyword == 'rate limit':
-		log_message = 'Oops, our bot has exceeded the number of API calls in our plan'
-		logging.error(log_message)
-	elif keyword == 'bad request':
-		log_message = "We are submitting a bad request to the API"
-		logging.error(log_message)
 	elif keyword == 'parsed search result':
 		log_message = 'Found matching recipe with id ' + term[0]
 		logging.debug(log_message)
@@ -181,3 +178,9 @@ def log_api_event(keyword, *term, **criteria):
 	elif keyword == 'parsed recipe result':
 		log_message = 'Successfuly retreived recipe'
 		logging.debug(log_message)
+
+"""
+Method to log errors related to API functionality
+"""
+def log_api_error(error_message):
+	logging.error(error_message)

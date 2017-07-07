@@ -5,6 +5,7 @@ Yummly API.
 import unittest
 from unittest.mock import Mock
 from api_functions import parse_response
+from apierror import APIError
 
 """
 Test methods related to parsing error results of search queries in Yummly API
@@ -17,17 +18,17 @@ class TestParseErrorResults(unittest.TestCase):
 	# Test returning an error message for 500 response
 	def test_parse_server_error_response(self):
 		mock_response = Mock(status_code=500)
-		self.assertEqual('server error', parse_response(self.keyword, mock_response))
+		self.assertRaises(APIError, parse_response, self.keyword, mock_response)
 
 	# Test returning an error message for 409 response
 	def test_parse_rate_limit_response(self):
 		mock_response = Mock(status_code=409)
-		self.assertEqual('rate limit exceeded', parse_response(self.keyword, mock_response))
+		self.assertRaises(APIError, parse_response, self.keyword, mock_response)
 
 	# Test returning an error message for 400 response
 	def test_parse_bad_request_response(self):
 		mock_response = Mock(status_code=400)
-		self.assertEqual('bad request', parse_response(self.keyword, mock_response))
+		self.assertRaises(APIError, parse_response, self.keyword, mock_response)
 
 
 """
