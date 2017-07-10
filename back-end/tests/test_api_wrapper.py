@@ -364,5 +364,19 @@ class TestAPIWrapper(unittest.TestCase):
 		recipe_info = get_recipe_info(self.search_term, desired_servings)
 		self.assertEqual(expected_recipe_info, recipe_info)
 
+	# Test the wrapper method for a simple search: one search term, no options,
+	# scaling
+	def test_api_wrapper_scaling(self, mock_get):
+		expected_recipe_info = { 'name': 'Easy French Onion Soup',
+							 	 'scaled_ingredients': [ '9.0 tbsps butter',
+									  				 	 '9.0 medium onions, thinly sliced',
+									  				 	 '3.0 package McCormick® Au Jus Gravy Mix',
+									  				 	 '9.0 cups water' ],
+							 	 'recipe_url': 'https://www.mccormick.com/recipes/soups-stews/easy-french-onion-soup',
+						   		  }
+		desired_servings = 12
+		recipe_info = get_recipe_info(self.search_term, desired_servings)
+		self.assertEqual(expected_recipe_info, recipe_info)
+
 if __name__ == '__main__':
 	unittest.main()
