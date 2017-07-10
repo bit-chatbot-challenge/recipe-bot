@@ -8,7 +8,7 @@ class TestRecipeBot(unittest.TestCase):
     def test_get_slots(self):
         expected = {
             'RecipeType': 'lasagna',
-            'ServingSize': 6,
+            'Servings': 6,
             'Restrictions': 'lactose intolerant',
             'RecipeTime': 20
         }
@@ -18,7 +18,7 @@ class TestRecipeBot(unittest.TestCase):
                 "name": "intent-name",
                 "slots": {
                     "RecipeType": "lasagna",
-                    "ServingSize": 6,
+                    "Servings": 6,
                     "Restrictions": "lactose intolerant",
                     'RecipeTime': 20
                 }
@@ -35,10 +35,10 @@ class TestRecipeBot(unittest.TestCase):
             'intent_name': 'FindRecipe',
             'slots': {
                 "RecipeType": "lasagna",
-                "ServingSize": 6,
+                "Servings": 6,
                 "Restrictions": "lactose intolerant"
             },
-            'slot_to_elicit': 'ServingSize',
+            'slot_to_elicit': 'Servings',
             'message': 'How many are you feeding?'
         }
 
@@ -88,7 +88,7 @@ class TestRecipeBot(unittest.TestCase):
             },
             'slots': {
                 "RecipeType": "lasagna",
-                "ServingSize": 6,
+                "Servings": 6,
                 "Restrictions": "lactose intolerant",
                 'RecipeTime': 20
             }
@@ -109,7 +109,7 @@ class TestRecipeBot(unittest.TestCase):
     def test_build_validation_result(self):
         params = {
             'is_valid': False,
-            'violated_slot': 'ServingSize',
+            'violated_slot': 'Servings',
             'message_content': None
         }
 
@@ -129,7 +129,7 @@ class TestRecipeBot(unittest.TestCase):
                                                            params['violated_slot'],
                                                            params['message_content']))
 
-    def test_validate_find_recipe(self):
+    def test_validate_restrictions(self):
         expected = build_validation_result(False,
                                             'Restrictions',
                                             'Are there any more dietary restrictions or allergies I should know about?')
@@ -157,6 +157,29 @@ class TestRecipeBot(unittest.TestCase):
         self.assertEqual('259200', parse_time(three_days))
         self.assertEqual('45', parse_time(forty_five_seconds))
         self.assertEqual('18600', parse_time(five_hours_ten_minutes))
+    
+    def test_get_bot_response(self):
+        details = {
+            'name': 'Baked Bacon Mac & Cheese',
+            'recipe_url': 'https://notarealurl.com',
+            'scaled_ingredients': [
+                '6 lbs of bacon',
+                '10 lbs. of cheddar',
+                '5 bags of macaroni noodles'
+            ]
+        }
+        name = details['name']
+        ingredients = details['scaled_ingredients']
+        url = details['recipe_url']
+
+        expected = f'Here is a recipe called {name}. ' \
+                   f'The full instructions are available at: {url}. \n' \
+                   'Based on the desired servings, you will need: \n' \
+                   f'- {ingredients[0]} \n' \
+                   f'- {ingredients[1]} \n' \
+                   f'- {ingredients[2]} \n'
+
+        self.assertEqual(expected, get_bot_response(details))
 
     def test_find_recipe(self):
         intent = {
@@ -164,7 +187,7 @@ class TestRecipeBot(unittest.TestCase):
                 'name': 'FindRecipe',
                 'slots': {
                     "RecipeType": "lasagna",
-                    "ServingSize": 6,
+                    "Servings": 6,
                     "Restrictions": "lactose intolerant",
                     'RecipeTime': 20
                 }
@@ -181,7 +204,7 @@ class TestRecipeBot(unittest.TestCase):
                 'name': 'FindRecipe',
                 'slots': {
                     "RecipeType": "lasagna",
-                    "ServingSize": 6,
+                    "Servings": 6,
                     "Restrictions": "lactose intolerant",
                     'RecipeTime': 20
                 }
