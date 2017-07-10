@@ -17,11 +17,6 @@ HEADERS  = OrderedDict({
 	'Connection': 'close',
 })
 
-AUTH_PARAMETERS = OrderedDict({
-	'_app_id': os.environ["AWS_YUMMLY_APP_ID"],
-	'_app_key': os.environ['AWS_YUMMLY_APP_KEY'],
-})
-
 OPTIONAL_PARAMETERS = ['allergy', 'time', 'excluded_ingredient']
 
 YUMMLY_PARAM_MAPPING = {
@@ -103,7 +98,7 @@ Method to get recipe based on recipe id
 def get_recipe(recipe_id):
 	log_api_event('get recipe', recipe_id)
 	recipe_base_url = BASE_API_GET_URL + recipe_id
-	r = requests.get(recipe_base_url, params=AUTH_PARAMETERS, headers={'Connection':'close'})
+	r = requests.get(recipe_base_url, headers=HEADERS)
 	return r
 
 """
@@ -154,8 +149,8 @@ def get_recipe_details(recipe_response, desired_servings):
 """
 Wrapper method to search API and get recipe details based on provided info
 """
-def get_recipe_info(search_term, desired_servings):
-	search_response = get_search_results(search_term)
+def get_recipe_info(search_term, desired_servings, **search_options):
+	search_response = get_search_results(search_term, **search_options)
 	try:
 		matching_recipe_id = parse_response('search', search_response)
 	except RequestError as request_err:
