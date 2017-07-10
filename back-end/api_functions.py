@@ -14,6 +14,7 @@ from no_match_error import NoMatchError
 HEADERS  = OrderedDict({
 	'X-Yummly-App-ID': os.environ["AWS_YUMMLY_APP_ID"],
 	'X-Yummly-App-Key': os.environ['AWS_YUMMLY_APP_KEY'],
+	'Connection': 'close',
 })
 
 AUTH_PARAMETERS = OrderedDict({
@@ -37,7 +38,7 @@ LOG_MESSAGE_MAPPING = {
 	'retrieve url': 'Retrieving url for recipe',
 	'get recipe details': 'Getting details for recipe',
 	'scaling': 'Getting and scaling recipe ingredients',
-	'retreive name': 'Getting recipe name',
+	'retrieve name': 'Getting recipe name',
 	'parsed recipe result': 'Successfuly retreived recipe',
 }
 
@@ -68,7 +69,6 @@ def get_search_results(search_term, **options):
 	log_api_event('query', search_term, **options)
 	payload = create_payload(search_term, **options)
 	r = requests.get(BASE_API_SEARCH_URL, headers=HEADERS, params=payload)
-	r.connection.close()
 	return r
 
 
@@ -103,8 +103,7 @@ Method to get recipe based on recipe id
 def get_recipe(recipe_id):
 	log_api_event('get recipe', recipe_id)
 	recipe_base_url = BASE_API_GET_URL + recipe_id
-	r = requests.get(recipe_base_url, params=AUTH_PARAMETERS)
-	r.connection.close()
+	r = requests.get(recipe_base_url, params=AUTH_PARAMETERS, headers={'Connection':'close'})
 	return r
 
 """
