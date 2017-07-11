@@ -6,8 +6,7 @@ recipe Lex bot.
 from __future__ import print_function
 import json
 import logging
-import requests
-import api_functions
+#import api_functions
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -131,7 +130,20 @@ def parse_time(time_slot):
     return str(seconds)
 
 
-def parse_api_response(response):
+def get_bot_response(details):
+    """
+    Called by find_recipe to return the final response to the user.
+    """
+    name = details['name']
+    ingredients = details['scaled_ingredients']
+    url = details['recipe_url']
+
+    response = f'Here is a recipe called {name}. ' \
+               f'The full instructions are available at: {url}. \n' \
+               'Based on the desired servings, you will need: \n'
+    for ingredient in ingredients:
+        response += f'- {ingredient} \n'
+
     return response
 
 
@@ -153,7 +165,7 @@ def find_recipe(intent_request):
                                validation_result['violatedSlot'],
                                validation_result['message'])
 
-        
+       
         # Return attributes and slots back to bot for the next step
         return delegate(intent_request['sessionAttributes'], get_slots(intent_request))
     # Right here is where we would need to make an API call to retrieve a recipe
@@ -162,7 +174,7 @@ def find_recipe(intent_request):
     response = 'placeholdin it up over here'
     return close(intent_request['sessionAttributes'],
                  'Fulfilled',
-                 {'contentType': 'PlainText', 'content': parse_api_response(response)})
+                 {'contentType': 'PlainText', 'content': get_bot_response(response)})
 
 def dispatch(intent_request):
     """
