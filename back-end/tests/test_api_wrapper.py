@@ -438,5 +438,20 @@ class TestAPIWrapper(unittest.TestCase):
 									  allergy=allergy)
 		self.assertEqual(expected_recipe_info, recipe_info)
 
+	# Test the wrapper method for a search with an excluded ingredient
+	def test_api_wrapper_excluded(self, mock_get):
+		expected_recipe_info = { 'name': 'Easy French Onion Soup',
+							 	 'scaled_ingredients': [ '3.0 tbsps butter',
+									  				 	 '3.0 medium onions, thinly sliced',
+									  				 	 '1.0 package McCormick® Au Jus Gravy Mix',
+									  				 	 '3.0 cups water' ],
+							 	 'recipe_url': 'https://www.mccormick.com/recipes/soups-stews/easy-french-onion-soup',
+						   		  }
+		desired_servings = 4
+		excluded_ingredient = 'thyme'
+		recipe_info = get_recipe_info(self.search_term, desired_servings,
+									  excluded_ingredient=excluded_ingredient)
+		self.assertEqual(expected_recipe_info, recipe_info)
+
 if __name__ == '__main__':
 	unittest.main()
