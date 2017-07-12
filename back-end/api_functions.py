@@ -117,10 +117,11 @@ def get_scaled_ingredients(recipe_response, desired_servings):
 	original_servings = recipe_response['numberOfServings']
 	scaled_ingredients = []
 	for ingredient in ingredients:
-		if not re.match('\d+', ingredient):
+		number_regex_match = re.match('\d+', ingredient)
+		if not number_regex_match:
 			scaled_ingredients.append(ingredient)
 		else:
-			quantity = re.match('\d+', ingredient).group()
+			quantity = number_regex_match.group()
 			unit = re.sub('\s', '', re.split('\d+', ingredient)[1], count=1)
 			scaled_quantity = (desired_servings/original_servings)*int(quantity)
 			scaled_ingredients.append(str(scaled_quantity) + ' ' + unit)
