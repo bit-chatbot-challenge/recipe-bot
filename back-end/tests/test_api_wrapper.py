@@ -422,5 +422,21 @@ class TestAPIWrapper(unittest.TestCase):
 									  allergy=allergy, time=time)
 		self.assertEqual(expected_recipe_info, recipe_info)
 
+	# Test the wrapper method for a search with multiple values for one
+	# requirement
+	def test_api_wrapper_req_multi(self, mock_get):
+		expected_recipe_info = { 'name': 'Easy French Onion Soup',
+							 	 'scaled_ingredients': [ '3.0 tbsps butter',
+									  				 	 '3.0 medium onions, thinly sliced',
+									  				 	 '1.0 package McCormick® Au Jus Gravy Mix',
+									  				 	 '3.0 cups water' ],
+							 	 'recipe_url': 'https://www.mccormick.com/recipes/soups-stews/easy-french-onion-soup',
+						   		  }
+		desired_servings = 4
+		allergy = ['Gluten-Free', 'Seafood-Free']
+		recipe_info = get_recipe_info(self.search_term, desired_servings,
+									  allergy=allergy)
+		self.assertEqual(expected_recipe_info, recipe_info)
+
 if __name__ == '__main__':
 	unittest.main()
