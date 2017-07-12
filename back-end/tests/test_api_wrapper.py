@@ -4,6 +4,8 @@ This is the test suite for the wrapper for methods related to the Yummly API.
 import unittest
 from unittest import mock
 from api_functions import get_recipe_info
+from request_error import RequestError
+from no_match_error import NoMatchError
 
 """
 Mock for requests.get
@@ -16,6 +18,25 @@ def mocked_requests_get(*args, **kwargs):
 
 		def json(self):
 			return self.json_data
+
+	if 'params' in kwargs:
+		params = kwargs.get('params')
+		if params['q'] == 'butterbeer':
+			return MockedResponse(500, None)
+		elif params['q'] == 'hamster food':
+			mock_json_data = { 'criteria': { 'excludedIngredient': None, 
+									 	 	 'q': 'hamster food', 
+									 	 	 'allowedIngredient': None
+								   	   	   }, 
+					   	   'totalMatchCount': 0, 
+					       'matches': [],
+					  	   'attribution': { 'html': "Recipe search powered by <a href='http://www.yummly.co/recipes'><img alt='Yummly' src='https://static.yummly.co/api-logo.png'/></a>",
+											'logo': 'https://static.yummly.co/api-logo.png',
+											'url': 'http://www.yummly.co/recipes/',
+											'text': 'Recipe search powered by Yummly'
+									  	  }, 
+					   	   'facetCounts': {}}
+			return MockedResponse(200, mock_json_data)
 
 	if args[0] == 'http://api.yummly.com/v1/api/recipes':
 		mock_json_data = { 'criteria': { 'excludedIngredient': None, 
@@ -452,6 +473,31 @@ class TestAPIWrapper(unittest.TestCase):
 		recipe_info = get_recipe_info(self.search_term, desired_servings,
 									  excluded_ingredient=excluded_ingredient)
 		self.assertEqual(expected_recipe_info, recipe_info)
+
+
+"""
+Test that the wrapper method for retreiving info from the API raises exceptions
+"""
+#Patch requests.get to mock API call
+@mock.patch('api_functions.requests.get', side_effect=mocked_requests_get)
+class TestAPIWrapperExceptions(unittest.TestCase):
+
+	def setUp(self):
+		self.desired_servings = 4
+
+	# Test that RequestError is raised if an error is returned for the search
+	# request
+	def test_requesterror_search(self, mock_get):
+		server_search_term = 'butterbeer'
+		self.assertRaises(RequestError, get_recipe_info, server_search_term,
+						  self.desired_servings)
+
+	# Test that NoMatchError is raised if no matches are returned for the search
+	# request
+	def test_nomatcherror_search(self, mock_get):
+		no_match_search_term = 'hamster food'
+		self.assertRaises(NoMatchError, get_recipe_info, no_match_search_term,
+						  self.desired_servings)
 
 if __name__ == '__main__':
 	unittest.main()
