@@ -156,16 +156,16 @@ def get_recipe_info(search_term, desired_servings, **search_options):
 		matching_recipe_id = parse_response('search', search_response)
 	except RequestError as request_err:
 		log_api_error(request_err.message())
-		raise request_err
+		raise 
 	except NoMatchError as match_err:
 		log_api_error(match_err.message())
-		raise match_err
+		raise
 	recipe_response = get_recipe(matching_recipe_id)
 	try:
 		matching_recipe = parse_response('recipe', recipe_response)
 	except RequestError as request_err:
 		log_api_error(request_err.message())
-		raise request_err
+		raise
 	matching_recipe_details = get_recipe_details(matching_recipe, desired_servings)
 	return matching_recipe_details
 
