@@ -98,7 +98,7 @@ class TestParseRecipeResult(unittest.TestCase):
 
 	def setUp(self):
 		self.keyword = 'recipe'
-		self.mock_response_body = self.mock_response = { 'numberOfServings': 4, 
+		self.mock_response_body = { 'numberOfServings': 4, 
 		  				  	   'rating': 3, 
 		  				  	   'flavors': {}, 
 		  				  	   'ingredientLines': [ '3 tbsps butter', 

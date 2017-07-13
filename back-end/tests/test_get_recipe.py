@@ -4,30 +4,24 @@ API and returning URLs and scaled ingredient list
 """
 
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from api_functions import get_scaled_ingredients, get_recipe_url
 from api_functions import get_recipe, get_recipe_name
 from api_functions import get_recipe_details, parse_response
 
+"""
+Mock for requests.get
+"""
+def mocked_requests_get(*args, **kwargs):
+	class MockedResponse:
+		def __init__(self, status_code, json_data):
+			self.status_code = status_code
+			self.json_data = json_data
 
-"""
-Test methods related to getting recipe info
-"""
-class TestGettingRecipeInfo(unittest.TestCase):
-	def test_get_recipe(self):
-		recipe_id = 'Easy-French-Onion-Soup-2038937'
-		expected_recipe_result = 200
-		response = get_recipe(recipe_id)
-		self.assertEqual(expected_recipe_result, response.status_code)
+		def json(self):
+			return self.json_data
 
-"""
-Test methods related to parsing recipe result
-"""
-class TestParseRecipeResult(unittest.TestCase):
-
-	def setUp(self):
-		self.keyword = 'recipe'
-		self.mock_response_body = self.mock_response = { 'numberOfServings': 4, 
+	mock_json_data = { 'numberOfServings': 4, 
 		  				  	   'rating': 3, 
 		  				  	   'flavors': {}, 
 		  				  	   'ingredientLines': [ '3 tbsps butter', 
@@ -320,27 +314,20 @@ class TestParseRecipeResult(unittest.TestCase):
 		  						  	   'value': 0.0, 
 		  						  	   'attribute': 'VITK' }, 
 		  						  	   {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': '18:0', 'value': 1.07, 'attribute': 'F18D0'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Lutein + zeaxanthin', 'value': 0.0, 'attribute': 'LUT+ZEA'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Cholesterol', 'value': 0.02, 'attribute': 'CHOLE'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': '17:0', 'value': 0.11, 'attribute': 'F17D0'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Phosphorus, P', 'value': 0.03, 'attribute': 'P'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Choline, total', 'value': 0.01, 'attribute': 'CHOLN'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': '10:0', 'value': 0.32, 'attribute': 'F10D0'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Calcium, Ca', 'value': 0.03, 'attribute': 'CA'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Magnesium, Mg', 'value': 0.01, 'attribute': 'MG'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Fatty acids, total polyunsaturated', 'value': 0.32, 'attribute': 'FAPU'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': '14:0', 'value': 0.75, 'attribute': 'F14D0'}, {'unit': {'pluralAbbreviation': 'mcg_RAE', 'plural': 'mcg_RAE', 'id': '0fcf76b3-891a-403d-883f-58c8809ef151', 'name': 'mcg_RAE', 'decimal': False, 'abbreviation': 'mcg_RAE'}, 'description': 'Vitamin A, RAE', 'value': 72.85, 'attribute': 'VITA_RAE'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': '16:0', 'value': 2.34, 'attribute': 'F16D0'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': '18:1 undifferentiated', 'value': 2.13, 'attribute': 'F18D1'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': '18:2 undifferentiated', 'value': 0.32, 'attribute': 'F18D2'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Sucrose', 'value': 0.83, 'attribute': 'SUCS'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Carotene, beta', 'value': 0.0, 'attribute': 'CARTB'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': '16:1 c', 'value': 0.11, 'attribute': 'F16D1C'}, {'unit': {'pluralAbbreviation': 'IU', 'plural': 'IU', 'id': 'ed46fe0c-44fe-4c1f-b3a8-880f92e30930', 'name': 'IU', 'decimal': True, 'abbreviation': 'IU'}, 'description': 'Vitamin A, IU', 'value': 267.79, 'attribute': 'VITA_IU'}, {'unit': {'pluralAbbreviation': 'kcal', 'plural': 'calories', 'id': 'fea252f8-9888-4365-b005-e2c63ed3a776', 'name': 'calorie', 'decimal': True, 'abbreviation': 'kcal'}, 'description': 'Energy', 'value': 109.36, 'attribute': 'ENERC_KCAL'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Vitamin C, total ascorbic acid', 'value': 0.01, 'attribute': 'VITC'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Total lipid (fat)', 'value': 8.63, 'attribute': 'FAT'}, {'unit': {'pluralAbbreviation': 'IU', 'plural': 'IU', 'id': 'ed46fe0c-44fe-4c1f-b3a8-880f92e30930', 'name': 'IU', 'decimal': True, 'abbreviation': 'IU'}, 'description': 'Vitamin D', 'value': 6.39, 'attribute': 'VITD-'}, {'unit': {'pluralAbbreviation': 'grams', 'plural': 'grams', 'id': '12485d26-6e69-102c-9a8a-0030485841f8', 'name': 'gram', 'decimal': True, 'abbreviation': 'g'}, 'description': 'Sodium, Na', 'value': 0.07, 'attribute': 'NA'}], 'id': 'Easy-French-Onion-Soup-2038937', 'attribution': {'url': 'http://www.yummly.co/recipe/Easy-French-Onion-Soup-2038937', 'logo': 'https://static.yummly.co/api-logo.png', 'html': "<a href='http://www.yummly.co/recipe/Easy-French-Onion-Soup-2038937'>Easy French Onion Soup recipe</a> information powered by <img alt='Yummly' src='https://static.yummly.co/api-logo.png'/>", 'text': 'Easy French Onion Soup recipes: information powered by Yummly'}, 'images': [{'imageUrlsBySize': {'360': 'https://lh3.googleusercontent.com/l_8dJqkMDa2Ge6978mu2Tv4XVCsuHq7LZaQQIz1pfBsGgvabhCo6Q7eI_mmyc_FXVsa3Fn2-i892lWZVc_18=s360-c', '90': 'https://lh3.googleusercontent.com/l_8dJqkMDa2Ge6978mu2Tv4XVCsuHq7LZaQQIz1pfBsGgvabhCo6Q7eI_mmyc_FXVsa3Fn2-i892lWZVc_18=s90-c'}, 'hostedMediumUrl': 'https://lh3.googleusercontent.com/Bq8oxo3CpxSSY-rur00MRQ6iQAKRwcmFjIcVeLqz817x64Y7d9Py9CtU4NiN0NCxEpJi3-AT9FT9hyFJgjVXAzI=s180', 'hostedLargeUrl': 'https://lh3.googleusercontent.com/Bq8oxo3CpxSSY-rur00MRQ6iQAKRwcmFjIcVeLqz817x64Y7d9Py9CtU4NiN0NCxEpJi3-AT9FT9hyFJgjVXAzI=s360', 'hostedSmallUrl': 'https://lh3.googleusercontent.com/Bq8oxo3CpxSSY-rur00MRQ6iQAKRwcmFjIcVeLqz817x64Y7d9Py9CtU4NiN0NCxEpJi3-AT9FT9hyFJgjVXAzI=s90'}], 'totalTime': '35 min', 'attributes': {'course': ['Soups']}}
-	
-	# Test returning an error message for 500 response
-	def test_parse_server_error_response(self):
-		mock_response = Mock(status_code=500)
-		self.assertEqual('server error', parse_response(self.keyword, mock_response))
 
-	# Test returning an error message for 409 response
-	def test_parse_rate_limit_response(self):
-		mock_response = Mock(status_code=409)
-		self.assertEqual('rate limit exceeded', parse_response(self.keyword, mock_response))
+	return MockedResponse(200, mock_json_data)
 
-	# Test returning an error message for 400 response
-	def test_parse_bad_request_response(self):
-		mock_response = Mock(status_code=400)
-		self.assertEqual('bad request', parse_response(self.keyword, mock_response))
-
-	# Test returning a response body for successful request
-	def test_successful_request(self):
-		mock_response = Mock(status_code=200)
-		mock_response.json.return_value = self.mock_response_body
-		self.assertEqual(self.mock_response_body, parse_response(self.keyword, mock_response))
+"""
+Test methods related to getting recipe info
+"""
+#Patch requests.get to mock API call
+@patch('api_functions.requests.get', side_effect=mocked_requests_get)
+class TestGettingRecipeInfo(unittest.TestCase):
+	def test_get_recipe(self, mock_get):
+		recipe_id = 'Easy-French-Onion-Soup-2038937'
+		expected_recipe_result = 200
+		response = get_recipe(recipe_id)
+		self.assertEqual(expected_recipe_result, response.status_code)
 
 
 """
