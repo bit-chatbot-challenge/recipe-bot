@@ -3,3 +3,4 @@
 /back-end/lib/
 /back-end/pip-selfcheck.json
 *pyc
+/.vscode/

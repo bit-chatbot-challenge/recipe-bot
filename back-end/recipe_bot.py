@@ -6,7 +6,7 @@ recipe Lex bot.
 from __future__ import print_function
 import json
 import logging
-#import api_functions
+from api_functions import get_recipe_info
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -97,9 +97,11 @@ def validate_restrictions(restriction):
     # If a slot is null, validation fails and returns prompt to elicit slot
     if restriction != 'No' and restriction is not None:
         if restriction in ALLERGIES_LIST:
-            ALLERGIES.append(ALLERGIES_LIST[restriction])
+            if restriction not in ALLERGIES:
+                ALLERGIES.append(ALLERGIES_LIST[restriction])
         else:
-            RESTRICTIONS.append(restriction)
+            if restriction not in RESTRICTIONS:
+                RESTRICTIONS.append(restriction)
         return build_validation_result(False,
                                        'Restrictions',
                                        'Are there any more dietary restrictions or allergies I should know about?')
@@ -137,7 +139,6 @@ def get_bot_response(details):
     name = details['name']
     ingredients = details['scaled_ingredients']
     url = details['recipe_url']
-
     response = f'Here is a recipe called {name}. ' \
                f'The full instructions are available at: {url}. \n' \
                'Based on the desired servings, you will need: \n'
@@ -151,11 +152,11 @@ def find_recipe(intent_request):
     """
     Called by dispatch to handle a recipe request intent.
     """
-    # Get invocation source
+    # Get invocation source and slots
     source = intent_request['invocationSource']
+    slots = get_slots(intent_request)
     # If source is DialogCodeHook, validate our slots
     if source == 'DialogCodeHook':
-        slots = get_slots(intent_request)
         validation_result = validate_restrictions(slots["Restrictions"])
         if not validation_result['isValid']:
             slots[validation_result['violatedSlot']] = None
@@ -164,14 +165,59 @@ def find_recipe(intent_request):
                                slots,
                                validation_result['violatedSlot'],
                                validation_result['message'])
-
-       
         # Return attributes and slots back to bot for the next step
-        return delegate(intent_request['sessionAttributes'], get_slots(intent_request))
-    # Right here is where we would need to make an API call to retrieve a recipe
-    # For now just a simple response, will write template function later
-    # Fulfill recipe intent and returned adjusted recipe
-    response = 'placeholdin it up over here'
+        return delegate(intent_request['sessionAttributes'],slots)
+    # Make API calls based on slots elicited from user
+    recipe = slots['RecipeType']
+    servings = slots['Servings']
+    if not ALLERGIES and not RESTRICTIONS and not slots['RecipeTime']:
+        response = get_recipe_info(recipe, servings)
+    elif slots['RecipeTime']:
+        time = parse_time(slots['RecipeTime'])
+        if not ALLERGIES and not RESTRICTIONS:
+            response = get_recipe_info(recipe, servings, time=time)
+        elif not ALLERGIES:
+            response = get_recipe_info(
+                recipe, 
+                servings,
+                time=time, 
+                excluded_ingredient=RESTRICTIONS
+            )
+        elif not RESTRICTIONS:
+            response = get_recipe_info(
+                recipe,
+                servings,
+                time=time,
+                allergy=ALLERGIES
+            )
+        else:
+            response = get_recipe_info(
+                recipe,
+                servings,
+                time=time,
+                allergy=ALLERGIES,
+                excluded_ingredient=RESTRICTIONS
+            )
+    elif RESTRICTIONS:
+        if not ALLERGIES:
+            response = get_recipe_info(
+                recipe,
+                servings,
+                excluded_ingredient=RESTRICTIONS
+            )
+        else:
+            response = get_recipe_info(
+                recipe,
+                servings,
+                allergy=ALLERGIES,
+                excluded_ingredient=RESTRICTIONS
+            )
+    elif ALLERGIES:
+        response = get_recipe_info(
+            recipe,
+            servings,
+            allergy=ALLERGIES
+        )
     return close(intent_request['sessionAttributes'],
                  'Fulfilled',
                  {'contentType': 'PlainText', 'content': get_bot_response(response)})
@@ -192,9 +238,6 @@ def handler(event, contex):
     """
     Handle incoming recipe requests by passing event to dispatch function
     """
-    # Get search results
-
-    # Print request contents
     print("Received recipe request: " + json.dumps(event, indent=2))
     logger.debug('event.bot.name={}'.format(event['bot']['name']))
     return dispatch(event)

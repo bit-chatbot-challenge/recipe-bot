@@ -3,29 +3,30 @@ from recipe_bot import *
 
 class TestRecipeBot(unittest.TestCase):
     def setUp(self):
-        pass
-
-    def test_get_slots(self):
-        expected = {
+        self.details = {
+            'name': 'Baked Bacon Mac & Cheese',
+            'recipe_url': 'https://notarealurl.com',
+            'scaled_ingredients': [
+                '6 lbs of bacon',
+                '10 lbs. of cheddar',
+                '5 bags of macaroni noodles'
+            ]
+        }
+        self.slots = {
             'RecipeType': 'lasagna',
             'Servings': 6,
             'Restrictions': 'lactose intolerant',
-            'RecipeTime': 20
+            'RecipeTime': 'PT20M'
         }
 
+    def test_get_slots(self):
         test = {
             "currentIntent": {
                 "name": "intent-name",
-                "slots": {
-                    "RecipeType": "lasagna",
-                    "Servings": 6,
-                    "Restrictions": "lactose intolerant",
-                    'RecipeTime': 20
-                }
+                "slots": self.slots
             }
         }
-
-        self.assertEqual(get_slots(test), expected)
+        self.assertEqual(get_slots(test), self.slots)
 
     def test_elicit_slot(self):
         params = {
@@ -33,15 +34,10 @@ class TestRecipeBot(unittest.TestCase):
                 'test': 123
             },
             'intent_name': 'FindRecipe',
-            'slots': {
-                "RecipeType": "lasagna",
-                "Servings": 6,
-                "Restrictions": "lactose intolerant"
-            },
+            'slots': self.slots,
             'slot_to_elicit': 'Servings',
             'message': 'How many are you feeding?'
         }
-
         expected = {
             'sessionAttributes': params['session_attributes'],
             'dialogAction': {
@@ -52,7 +48,6 @@ class TestRecipeBot(unittest.TestCase):
                 'message': params['message']
             }
         }
-
         self.assertEqual(expected, elicit_slot(params['session_attributes'],
                                                params['intent_name'],
                                                params['slots'],
@@ -67,7 +62,6 @@ class TestRecipeBot(unittest.TestCase):
             'fulfillment_state': 'Fullfilled',
             'message': 'Here is your requested recipe'
         }
-
         expected = {
             'sessionAttributes': params['session_attributes'],
             'dialogAction': {
@@ -76,7 +70,6 @@ class TestRecipeBot(unittest.TestCase):
                 'message': params['message']
             }
         }
-
         self.assertEqual(expected, close(params['session_attributes'],
                                          params['fulfillment_state'],
                                          params['message']))
@@ -86,14 +79,8 @@ class TestRecipeBot(unittest.TestCase):
             'session_attributes': {
                 'test': 123
             },
-            'slots': {
-                "RecipeType": "lasagna",
-                "Servings": 6,
-                "Restrictions": "lactose intolerant",
-                'RecipeTime': 20
-            }
+            'slots': self.slots
         }
-
         expected = {
             'sessionAttributes': params['session_attributes'],
             'dialogAction': {
@@ -112,19 +99,15 @@ class TestRecipeBot(unittest.TestCase):
             'violated_slot': 'Servings',
             'message_content': None
         }
-
         expected = {
             'isValid': params['is_valid'],
             'violatedSlot': params['violated_slot']
         }
-
         self.assertEqual(expected, build_validation_result(params['is_valid'],
                                                            params['violated_slot'],
                                                            params['message_content']))
-
         params['message_content'] = 'How many are you feeding?'
         expected['message'] = {'contentType': 'PlainText', 'content': params['message_content']}
-
         self.assertEqual(expected, build_validation_result(params['is_valid'],
                                                            params['violated_slot'],
                                                            params['message_content']))
@@ -132,12 +115,12 @@ class TestRecipeBot(unittest.TestCase):
     def test_validate_restrictions(self):
         expected = build_validation_result(False,
                                             'Restrictions',
-                                            'Are there any more dietary restrictions or allergies I should know about?')
+                                            'Are there any more dietary restrictions or' \
+                                            ' allergies I should know about?')
         expected2 = build_validation_result(True, None, None)
         test = validate_restrictions('gluten free')
         test2 = validate_restrictions('No')
         test3 = validate_restrictions('cheese')
-
         self.assertEqual(expected, test)
         self.assertTrue('Gluten-Free' in ALLERGIES)
         self.assertEqual(expected2, test2)
@@ -151,7 +134,6 @@ class TestRecipeBot(unittest.TestCase):
         three_days = 'P3D'
         forty_five_seconds = 'PT45S'
         five_hours_ten_minutes = 'PT5H10M'
-
         self.assertEqual('600', parse_time(ten_minutes))
         self.assertEqual('18000', parse_time(five_hours))
         self.assertEqual('259200', parse_time(three_days))
@@ -159,55 +141,52 @@ class TestRecipeBot(unittest.TestCase):
         self.assertEqual('18600', parse_time(five_hours_ten_minutes))
     
     def test_get_bot_response(self):
-        details = {
-            'name': 'Baked Bacon Mac & Cheese',
-            'recipe_url': 'https://notarealurl.com',
-            'scaled_ingredients': [
-                '6 lbs of bacon',
-                '10 lbs. of cheddar',
-                '5 bags of macaroni noodles'
-            ]
-        }
-        name = details['name']
-        ingredients = details['scaled_ingredients']
-        url = details['recipe_url']
-
+        name = self.details['name']
+        ingredients = self.details['scaled_ingredients']
+        url = self.details['recipe_url']
         expected = f'Here is a recipe called {name}. ' \
                    f'The full instructions are available at: {url}. \n' \
                    'Based on the desired servings, you will need: \n' \
                    f'- {ingredients[0]} \n' \
                    f'- {ingredients[1]} \n' \
                    f'- {ingredients[2]} \n'
-
-        self.assertEqual(expected, get_bot_response(details))
+        self.assertEqual(expected, get_bot_response(self.details))
 
     def test_find_recipe(self):
         intent = {
             'currentIntent': {
                 'name': 'FindRecipe',
-                'slots': {
-                    "RecipeType": "lasagna",
-                    "Servings": 6,
-                    "Restrictions": "lactose intolerant",
-                    'RecipeTime': 20
-                }
+                'slots': self.slots
             },
-            'invocationSource': 'FulfillmentCodeHook',
+            'invocationSource': 'DialogCodeHook',
             'sessionAttributes': {
                 'test': 123
             }
         }
+        slots = intent['currentIntent']['slots']
+        validation_result = validate_restrictions(slots['Restrictions'])
+        expected = elicit_slot(
+            intent['sessionAttributes'],
+            intent['currentIntent']['name'],
+            slots,
+            validation_result['violatedSlot'],
+            validation_result['message']
+        )
+        self.assertEqual(expected, find_recipe(intent))
+        intent['invocationSource'] = 'FulfillmentCodeHook'
+        expected = close(
+            intent['sessionAttributes'],
+            'Fullfilled',
+            {'contentType': 'PlainText', 'content': get_bot_response(self.details)}
+        )
+        self.assertEqual(expected, find_recipe(intent))
+
 
     def test_dispatch(self):
         intent = {
             'currentIntent': {
                 'name': 'FindRecipe',
-                'slots': {
-                    "RecipeType": "lasagna",
-                    "Servings": 6,
-                    "Restrictions": "lactose intolerant",
-                    'RecipeTime': 20
-                }
+                'slots': self.slots
             },
             'invocationSource': 'FulfillmentCodeHook',
             'sessionAttributes': {
@@ -215,11 +194,8 @@ class TestRecipeBot(unittest.TestCase):
             },
             'userId': 'ralph'
         }
-
         self.assertEqual(dispatch(intent), find_recipe(intent))
-
         intent['currentIntent']['name'] = 'whatever'
-
         self.assertRaises(Exception, lambda: dispatch(intent))
 
 
