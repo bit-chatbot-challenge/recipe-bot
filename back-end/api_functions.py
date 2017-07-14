@@ -12,8 +12,8 @@ from no_match_error import NoMatchError
 
 """ --- Constants ---"""
 HEADERS  = OrderedDict({
-	'X-Yummly-App-ID': os.environ["AWS_YUMMLY_APP_ID"],
-	'X-Yummly-App-Key': os.environ['AWS_YUMMLY_APP_KEY'],
+	'X-Yummly-App-ID': os.environ.get("AWS_YUMMLY_APP_ID"),
+	'X-Yummly-App-Key': os.environ.get('AWS_YUMMLY_APP_KEY'),
 	'Connection': 'close',
 })
 
