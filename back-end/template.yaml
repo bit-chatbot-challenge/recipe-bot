@@ -9,4 +9,8 @@ Resources:
       MemorySize: 128
       Runtime: python3.6
       Timeout: 10
+      Environment:
+        Variables:
+          AWS_YUMMLY_APP_ID:
+          AWS_YUMMLY_APP_KEY: 
     Type: AWS::Serverless::Function
