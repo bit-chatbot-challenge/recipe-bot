@@ -1,0 +1,196 @@
+{
+  "name": "RecipeBot",
+  "description": "Bot to order flowers on the behalf of a user",
+  "intents": [
+    {
+      "intentName": "FindRecipe",
+      "intentVersion": "13"
+    }
+  ],
+  "clarificationPrompt": {
+    "messages": [
+      {
+        "contentType": "PlainText",
+        "content": "I didn't understand you, what would you like to cook?"
+      }
+    ],
+    "maxAttempts": 2,
+    "responseCard": null
+  },
+  "abortStatement": {
+    "messages": [
+      {
+        "contentType": "PlainText",
+        "content": "Sorry, I'm not able to find a recipe at this time"
+      }
+    ],
+    "responseCard": null
+  },
+  "status": "READY",
+  "failureReason": null,
+  "lastUpdatedDate": "2017-07-15T07:48:51.337Z",
+  "createdDate": "2017-07-15T07:48:28.386Z",
+  "idleSessionTTLInSeconds": 600,
+  "voiceId": "Salli",
+  "checksum": "e46d7e72-e9c7-4b58-9e7a-fe84851b19ea",
+  "version": "1",
+  "locale": "en-US",
+  "childDirected": false,
+  "dependencies": {
+    "intents": [
+      {
+        "name": "FindRecipe",
+        "description": null,
+        "slots": [
+          {
+            "name": "RecipeTime",
+            "description": null,
+            "slotConstraint": "Optional",
+            "slotType": "AMAZON.DURATION",
+            "slotTypeVersion": null,
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "How long should this take to prepare?"
+                }
+              ],
+              "maxAttempts": 2,
+              "responseCard": "{\"version\":1,\"contentType\":\"application/vnd.amazonaws.card.generic\",\"genericAttachments\":[{\"buttons\":[]}]}"
+            },
+            "priority": 4,
+            "sampleUtterances": [],
+            "responseCard": null
+          },
+          {
+            "name": "RecipeType",
+            "description": null,
+            "slotConstraint": "Required",
+            "slotType": "AMAZON.Food",
+            "slotTypeVersion": null,
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "What would you like to cook?"
+                },
+                {
+                  "contentType": "PlainText",
+                  "content": "What kind of meal would you like to make?"
+                },
+                {
+                  "contentType": "PlainText",
+                  "content": "What's on the menu?"
+                }
+              ],
+              "maxAttempts": 2,
+              "responseCard": "{\"version\":1,\"contentType\":\"application/vnd.amazonaws.card.generic\",\"genericAttachments\":[{\"buttons\":[]}]}"
+            },
+            "priority": 2,
+            "sampleUtterances": [],
+            "responseCard": null
+          },
+          {
+            "name": "Servings",
+            "description": null,
+            "slotConstraint": "Required",
+            "slotType": "AMAZON.NUMBER",
+            "slotTypeVersion": null,
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "How many are you feeding?"
+                },
+                {
+                  "contentType": "PlainText",
+                  "content": "What's the size of the group?"
+                },
+                {
+                  "contentType": "PlainText",
+                  "content": "How many people will be eating?"
+                }
+              ],
+              "maxAttempts": 2,
+              "responseCard": "{\"version\":1,\"contentType\":\"application/vnd.amazonaws.card.generic\",\"genericAttachments\":[{\"buttons\":[]}]}"
+            },
+            "priority": 1,
+            "sampleUtterances": [],
+            "responseCard": null
+          },
+          {
+            "name": "Restrictions",
+            "description": null,
+            "slotConstraint": "Optional",
+            "slotType": "Restrictions",
+            "slotTypeVersion": "1",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "Are there any dietary restrictions?"
+                },
+                {
+                  "contentType": "PlainText",
+                  "content": "Any allergies or ingredients I should avoid?"
+                }
+              ],
+              "maxAttempts": 2,
+              "responseCard": "{\"version\":1,\"contentType\":\"application/vnd.amazonaws.card.generic\",\"genericAttachments\":[{\"buttons\":[]}]}"
+            },
+            "priority": 3,
+            "sampleUtterances": [],
+            "responseCard": null
+          }
+        ],
+        "sampleUtterances": [
+          "I need a recipe",
+          "I want to cook {RecipeType}",
+          "I need to make {RecipeType} for {Servings} people",
+          "I need to feed {Servings} people",
+          "I need a {Restrictions} recipe",
+          "I need to cook something in under {RecipeTime}",
+          "I need to make {Restrictions} {RecipeType}",
+          "I need to make {Restrictions} {RecipeType} for {Servings} people",
+          "I need to make {Restrictions} {RecipeType} in under {RecipeTime}",
+          "I need to make {Restrictions} {RecipeType} for {Servings} people in less than {RecipeTime}",
+          "I need a {Restrictions} recipe for {Servings} people",
+          "I need a {Restrictions} recipe for {Servings} people that takes under {RecipeTime}",
+          "I need a {Restrictions} recipe that takes less than {RecipeTime}",
+          "I want to make {RecipeType}",
+          "I want to make {Restrictions} {RecipeType}",
+          "{RecipeType}"
+        ],
+        "fulfillmentActivity": {
+          "type": "ReturnIntent"
+        },
+        "parentIntentSignature": null,
+        "lastUpdatedDate": "2017-07-13T13:50:58.042Z",
+        "createdDate": "2017-07-13T13:50:58.042Z",
+        "version": "13",
+        "checksum": "1d3d2d31-658e-480d-b58d-a21365b75e12"
+      }
+    ],
+    "slotTypes": [
+      {
+        "name": "Restrictions",
+        "description": "Dietary restrictions",
+        "enumerationValues": [
+          {
+            "value": "diabetic"
+          },
+          {
+            "value": "pescatarian"
+          },
+          {
+            "value": "vegan"
+          }
+        ],
+        "lastUpdatedDate": "2017-06-13T01:45:25.446Z",
+        "createdDate": "2017-06-13T01:45:25.446Z",
+        "version": "1",
+        "checksum": null
+      }
+    ]
+  }
+}
