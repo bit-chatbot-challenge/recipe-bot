@@ -64,6 +64,9 @@ To deploy the application end-to-end:
 * Start a direct messag with the bot and tell it what you would like to cook!
 
 # Image gallery
+![Tuna Salad](/images/recipebot1.png?raw=true "Tuna Salad")
+![Celery Soup](/images/recipebot4.png?raw=true "Celery Soup")
+![Meatloaf](/images/recipebot5.png?raw=true "Meatloaf")
 
 # Video demo
 YouTube, Vimeo or Youku URL
