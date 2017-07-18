@@ -169,7 +169,7 @@ def find_recipe(intent_request):
         return delegate(intent_request['sessionAttributes'],slots)
     # Make API calls based on slots elicited from user
     recipe = slots['RecipeType']
-    servings = slots['Servings']
+    servings = int(slots['Servings'])
     if not ALLERGIES and not RESTRICTIONS and not slots['RecipeTime']:
         response = get_recipe_info(recipe, servings)
     elif slots['RecipeTime']:
