@@ -1,6 +1,9 @@
 # The Recipe Bot
 Recipe Bot provides all the info you need for whatever you want to cook, even taking dietary needs into consideration
 
+# Video Demo
+https://vimeo.com/226063384
+
 # It's Built With...
 * lex
 * lambda
@@ -54,6 +57,9 @@ We learned alot about breaking up duties in the team so we could work on differe
 We already have ideas for improving recipe bot.  First we'll take care of the major bugs in this minimum viable product.  That includes any quirks in the responses from the bot and getting fractional ingredients properly parsed.  We may also take the time to explore a different API for searching recipes, looking for one that is a bit easier to interface with. In any case, the team will continue to learn more about programing and deploying software that includes natural language processing.
 
 # Try it Out
+To try the Recipe Bot for yourself, you can add it to a Slack network: 
+<a href="https://slack.com/oauth/authorize?&client_id=185786192579.213968000915&scope=bot,chat:write:bot,im:read,links:write"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
+
 To deploy the application end-to-end:
 * Get a Slack account and Yummly API credentials
 * Access the Github repo is here: https://github.com/bit-chatbot-challenge/recipe-bot
@@ -72,7 +78,3 @@ To deploy the application end-to-end:
 
 ### Getting a Recipe for Celery Soup:
 <img src="/images/recipebot5.png?raw=true" width=500>
-
-# Video demo
-YouTube, Vimeo or Youku URL
-
