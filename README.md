@@ -2,8 +2,7 @@
 Recipe Bot provides all the info you need for whatever you want to cook, even taking dietary needs into consideration
 
 # Video Demo
-<iframe src="https://player.vimeo.com/video/226063384" width="640" height="400" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-<p><a href="https://vimeo.com/226063384">Recipe Bot Demo</a> from <a href="https://vimeo.com/user68970411">BIT Chatbot Challenge</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+https://vimeo.com/226063384
 
 # It's Built With...
 * lex
