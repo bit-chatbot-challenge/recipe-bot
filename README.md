@@ -2,7 +2,7 @@
 Recipe Bot provides all the info you need for whatever you want to cook, even taking dietary needs into consideration
 
 # Video Demo
-https://vimeo.com/226063384
+<a href="https://vimeo.com/226063384"><img src="/images/video-demo-screenshot.png?raw=true" width=500></a>
 
 # It's Built With...
 * lex
