@@ -64,8 +64,13 @@ To deploy the application end-to-end:
 * Start a direct messag with the bot and tell it what you would like to cook!
 
 # Image gallery
+### Tuna salad:
 <img src="/images/recipebot1.png?raw=true" width=500>
+
+### Celery Soup:
 <img src="/images/recipebot4.png?raw=true" width=500>
+
+### Meatloaf:
 <img src="/images/recipebot5.png?raw=true" width=500>
 
 # Video demo
