@@ -58,7 +58,7 @@ We already have ideas for improving recipe bot.  First we'll take care of the ma
 
 # Try it Out
 To try the Recipe Bot for yourself, you can add it to a Slack network: 
-<a href="https://slack.com/oauth/authorize?&client_id=185786192579.213968000915&scope=bot,chat:write:bot,im:read,links:write"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
+<ul><li> <a href="https://slack.com/oauth/authorize?&client_id=185786192579.213968000915&scope=bot,chat:write:bot,im:read,links:write"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a> </li>
 
 To deploy the application end-to-end:
 * Get a Slack account and Yummly API credentials
