@@ -61,7 +61,7 @@ To deploy the application end-to-end:
 *  `backend/template.yaml` is the Cloudformation template.  Zip the project up and place it in an S3 bucket.  Edit the template with the location of the zip file and the Yummly API credentials
 * Connect the Lex bot to the Lambda deployment and publisht the bot
 * Create an application in Slack and connect it to the Lex bot
-* Start a direct messag with the bot and tell it what you would like to cook!
+* Start a direct message with the bot and tell it what you would like to cook!
 
 # Image gallery
 ### Tuna salad:
