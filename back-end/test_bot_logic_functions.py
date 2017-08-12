@@ -173,30 +173,6 @@ class TestRecipeBot(unittest.TestCase):
             validation_result['message']
         )
         self.assertEqual(expected, find_recipe(intent))
-        intent['invocationSource'] = 'FulfillmentCodeHook'
-        expected = close(
-            intent['sessionAttributes'],
-            'Fullfilled',
-            {'contentType': 'PlainText', 'content': get_bot_response(self.details)}
-        )
-        self.assertEqual(expected, find_recipe(intent))
-
-
-    def test_dispatch(self):
-        intent = {
-            'currentIntent': {
-                'name': 'FindRecipe',
-                'slots': self.slots
-            },
-            'invocationSource': 'FulfillmentCodeHook',
-            'sessionAttributes': {
-                'test': 123
-            },
-            'userId': 'ralph'
-        }
-        self.assertEqual(dispatch(intent), find_recipe(intent))
-        intent['currentIntent']['name'] = 'whatever'
-        self.assertRaises(Exception, lambda: dispatch(intent))
 
 
 if __name__ == '__main__':
