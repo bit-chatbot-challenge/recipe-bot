@@ -108,7 +108,6 @@ def validate_restrictions(restriction):
     return build_validation_result(True, None, None)
 
 
-
 def parse_time(time_slot):
     """
     Utility function for converting Amazon duration values to seconds.
@@ -141,10 +140,34 @@ def get_bot_response(details):
     url = details['recipe_url']
     response = f'Here is a recipe called {name}. ' \
                f'The full instructions are available at: {url}. \n' \
-               'Based on the desired servings, you will need: \n'
+               'Based on the desired servings, you will need: '
     for ingredient in ingredients:
-        response += f'- {ingredient} \n'
-
+        response += f'\n- {ingredient}'
+    if ALLERGIES:
+        response += '\nThis recipe should be '
+        for index, allergy in enumerate(ALLERGIES):
+            if index == len(ALLERGIES) - 1 and index > 0:
+                response += f', and {allergy}.'
+            elif len(ALLERGIES) == 1:
+                response += f'{allergy}.'
+            elif index == 0:
+                response += f'{allergy}'
+            else:
+                response += f', {allergy}'
+    if RESTRICTIONS:
+        if ALLERGIES:
+            response += '\nThis recipe should also be free of the following ingredients: '
+        else:
+            response += '\nThis recipe should be free of the following ingredients: '
+        for index, restriction in enumerate(RESTRICTIONS):
+            if index == len(RESTRICTIONS) - 1 and index > 0:
+                response += f', and {restriction}.'
+            elif len(RESTRICTIONS) == 1:
+                response += f'{restriction}.'
+            elif index == 0:
+                response += f'{restriction}'
+            else:
+                response += f', {restriction}'
     return response
 
 
@@ -222,6 +245,7 @@ def find_recipe(intent_request):
                  'Fulfilled',
                  {'contentType': 'PlainText', 'content': get_bot_response(response)})
 
+
 def dispatch(intent_request):
     """
     Called when the user specifies an intent for this bot.
@@ -232,6 +256,7 @@ def dispatch(intent_request):
     if intent_name == 'FindRecipe':
         return find_recipe(intent_request)
     raise Exception('Intent with name ' + intent_name + ' not supported')
+
 
 """ --- Main handler --- """
 def handler(event, contex):

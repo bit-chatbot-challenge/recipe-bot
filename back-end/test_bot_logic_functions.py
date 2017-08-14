@@ -15,9 +15,10 @@ class TestRecipeBot(unittest.TestCase):
         self.slots = {
             'RecipeType': 'lasagna',
             'Servings': 6,
-            'Restrictions': 'lactose intolerant',
+            'Restrictions': 'cheese',
             'RecipeTime': 'PT20M'
         }
+        RESTRICTIONS.clear()
 
     def test_get_slots(self):
         test = {
@@ -146,10 +147,40 @@ class TestRecipeBot(unittest.TestCase):
         url = self.details['recipe_url']
         expected = f'Here is a recipe called {name}. ' \
                    f'The full instructions are available at: {url}. \n' \
-                   'Based on the desired servings, you will need: \n' \
-                   f'- {ingredients[0]} \n' \
-                   f'- {ingredients[1]} \n' \
-                   f'- {ingredients[2]} \n'
+                   'Based on the desired servings, you will need: ' \
+                   f'\n- {ingredients[0]}' \
+                   f'\n- {ingredients[1]}' \
+                   f'\n- {ingredients[2]}'
+        self.assertEqual(expected, get_bot_response(self.details))
+        ALLERGIES.append(ALLERGIES_LIST['gluten free'])
+        expected += f'\nThis recipe should be {ALLERGIES[0]}.'
+        self.assertEqual(expected, get_bot_response(self.details))
+        expected = expected[:expected.rfind('\n')]
+        ALLERGIES.append(ALLERGIES_LIST['sulfite free'])
+        expected += f'\nThis recipe should be {ALLERGIES[0]}, and {ALLERGIES[1]}.'
+        self.assertEqual(expected, get_bot_response(self.details))
+        expected = expected[:expected.rfind('\n')]
+        ALLERGIES.append(ALLERGIES_LIST['egg free'])
+        expected += f'\nThis recipe should be {ALLERGIES[0]}, {ALLERGIES[1]}, and {ALLERGIES[2]}.'
+        self.assertEqual(expected, get_bot_response(self.details))
+        RESTRICTIONS.append('cheese')
+        expected += f'\nThis recipe should also be free of the following ingredients: {RESTRICTIONS[0]}.'
+        self.assertEqual(expected, get_bot_response(self.details))
+        expected = expected[:expected.rfind('\n')]
+        RESTRICTIONS.append('tuna')
+        expected += '\nThis recipe should also be free of the following ingredients: ' \
+                    f'{RESTRICTIONS[0]}, and {RESTRICTIONS[1]}.'
+        self.assertEqual(expected, get_bot_response(self.details))
+        expected = expected[:expected.rfind('\n')]
+        RESTRICTIONS.append('marina')
+        expected += '\nThis recipe should also be free of the following ingredients: ' \
+                    f'{RESTRICTIONS[0]}, {RESTRICTIONS[1]}, and {RESTRICTIONS[2]}.'
+        self.assertEqual(expected, get_bot_response(self.details))
+        expected = expected[:expected.rfind('\n')]
+        expected = expected[:expected.rfind('\n')]
+        ALLERGIES.clear()
+        expected += '\nThis recipe should be free of the following ingredients: ' \
+                    f'{RESTRICTIONS[0]}, {RESTRICTIONS[1]}, and {RESTRICTIONS[2]}.'
         self.assertEqual(expected, get_bot_response(self.details))
 
     def test_find_recipe(self):
@@ -173,30 +204,6 @@ class TestRecipeBot(unittest.TestCase):
             validation_result['message']
         )
         self.assertEqual(expected, find_recipe(intent))
-        intent['invocationSource'] = 'FulfillmentCodeHook'
-        expected = close(
-            intent['sessionAttributes'],
-            'Fullfilled',
-            {'contentType': 'PlainText', 'content': get_bot_response(self.details)}
-        )
-        self.assertEqual(expected, find_recipe(intent))
-
-
-    def test_dispatch(self):
-        intent = {
-            'currentIntent': {
-                'name': 'FindRecipe',
-                'slots': self.slots
-            },
-            'invocationSource': 'FulfillmentCodeHook',
-            'sessionAttributes': {
-                'test': 123
-            },
-            'userId': 'ralph'
-        }
-        self.assertEqual(dispatch(intent), find_recipe(intent))
-        intent['currentIntent']['name'] = 'whatever'
-        self.assertRaises(Exception, lambda: dispatch(intent))
 
 
 if __name__ == '__main__':
