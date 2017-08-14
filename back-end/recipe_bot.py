@@ -140,30 +140,30 @@ def get_bot_response(details):
     url = details['recipe_url']
     response = f'Here is a recipe called {name}. ' \
                f'The full instructions are available at: {url}. \n' \
-               'Based on the desired servings, you will need: \n'
+               'Based on the desired servings, you will need: '
     for ingredient in ingredients:
-        response += f'- {ingredient} \n'
+        response += f'\n- {ingredient}'
     if ALLERGIES:
-        response += 'This recipe should be '
+        response += '\nThis recipe should be '
         for index, allergy in enumerate(ALLERGIES):
             if index == len(ALLERGIES) - 1 and index > 0:
-                response += f', and {allergy}. \n'
+                response += f', and {allergy}.'
             elif len(ALLERGIES) == 1:
-                response += f'{allergy}. \n'
+                response += f'{allergy}.'
             elif index == 0:
                 response += f'{allergy}'
             else:
                 response += f', {allergy}'
     if RESTRICTIONS:
         if ALLERGIES:
-            response += 'This recipe should also be free of the following ingredients: '
+            response += '\nThis recipe should also be free of the following ingredients: '
         else:
-            response += 'This recipe should be free of the following ingredients: '
+            response += '\nThis recipe should be free of the following ingredients: '
         for index, restriction in enumerate(RESTRICTIONS):
             if index == len(RESTRICTIONS) - 1 and index > 0:
-                response += f', and {restriction}. \n'
+                response += f', and {restriction}.'
             elif len(RESTRICTIONS) == 1:
-                response += f'{restriction}. \n'
+                response += f'{restriction}.'
             elif index == 0:
                 response += f'{restriction}'
             else:
