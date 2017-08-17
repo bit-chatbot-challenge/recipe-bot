@@ -113,21 +113,27 @@ class TestRecipeBot(unittest.TestCase):
                                                            params['violated_slot'],
                                                            params['message_content']))
 
-    def test_validate_restrictions(self):
-        expected = build_validation_result(False,
-                                            'Restrictions',
-                                            'Are there any more dietary restrictions or' \
-                                            ' allergies I should know about?')
-        expected2 = build_validation_result(True, None, None)
-        test = validate_restrictions('gluten free')
-        test2 = validate_restrictions('No')
-        test3 = validate_restrictions('cheese')
+    def test_validate_rslots(self):
+        expected = build_validation_result(False, 'RecipeType', 'What kind of meal do you want to make?')
+        test = validate_slots()
+        self.assertEqual(expected, test)
+        expected = build_validation_result(False, 'Servings', 'How many people are you serving?')
+        test = validate_slots(recipeType='lasagna')
+        self.assertEqual(expected, test)
+        expected = build_validation_result(False, 'Restrictions',
+                                           'Are there any allergies or dietary restrictions I should know about?')
+        test = validate_slots(recipeType='lasagna', servings='10')
+        self.assertEqual(expected, test)
+        expected = build_validation_result(False, 'Restrictions', 'Would you like to add any more restrictions?')
+        test = validate_slots(recipeType='lasagna', servings='10', restrictions='gluten')
         self.assertEqual(expected, test)
         self.assertTrue('Gluten-Free' in ALLERGIES)
-        self.assertEqual(expected2, test2)
-        self.assertEqual(expected, test3)
+        test = validate_slots(recipeType='lasagna', servings='10', restrictions='cheese')
+        self.assertEqual(expected, test)
         self.assertTrue('cheese' in RESTRICTIONS)
-
+        test = validate_slots(recipeType='lasagna', servings='10', restrictions='no')
+        expected = build_validation_result(True, None, None)
+        self.assertEqual(expected, test)
 
     def test_parse_time(self):
         ten_minutes = 'PT10M'
@@ -152,32 +158,50 @@ class TestRecipeBot(unittest.TestCase):
                    f'\n- {ingredients[1]}' \
                    f'\n- {ingredients[2]}'
         self.assertEqual(expected, get_bot_response(self.details))
-        ALLERGIES.append(ALLERGIES_LIST['gluten free'])
+        ALLERGIES.append(ALLERGIES_LIST['gluten'])
         expected += f'\nThis recipe should be {ALLERGIES[0]}.'
         self.assertEqual(expected, get_bot_response(self.details))
         expected = expected[:expected.rfind('\n')]
-        ALLERGIES.append(ALLERGIES_LIST['sulfite free'])
+        ALLERGIES.append(ALLERGIES_LIST['gluten'])
+        ALLERGIES.append(ALLERGIES_LIST['sulfite'])
         expected += f'\nThis recipe should be {ALLERGIES[0]}, and {ALLERGIES[1]}.'
         self.assertEqual(expected, get_bot_response(self.details))
         expected = expected[:expected.rfind('\n')]
-        ALLERGIES.append(ALLERGIES_LIST['egg free'])
+        ALLERGIES.append(ALLERGIES_LIST['gluten'])
+        ALLERGIES.append(ALLERGIES_LIST['sulfite'])
+        ALLERGIES.append(ALLERGIES_LIST['egg'])
         expected += f'\nThis recipe should be {ALLERGIES[0]}, {ALLERGIES[1]}, and {ALLERGIES[2]}.'
         self.assertEqual(expected, get_bot_response(self.details))
+        ALLERGIES.append(ALLERGIES_LIST['gluten'])
+        ALLERGIES.append(ALLERGIES_LIST['sulfite'])
+        ALLERGIES.append(ALLERGIES_LIST['egg'])
         RESTRICTIONS.append('cheese')
         expected += f'\nThis recipe should also be free of the following ingredients: {RESTRICTIONS[0]}.'
         self.assertEqual(expected, get_bot_response(self.details))
         expected = expected[:expected.rfind('\n')]
+        ALLERGIES.append(ALLERGIES_LIST['gluten'])
+        ALLERGIES.append(ALLERGIES_LIST['sulfite'])
+        ALLERGIES.append(ALLERGIES_LIST['egg'])
+        RESTRICTIONS.append('cheese')
         RESTRICTIONS.append('tuna')
         expected += '\nThis recipe should also be free of the following ingredients: ' \
                     f'{RESTRICTIONS[0]}, and {RESTRICTIONS[1]}.'
         self.assertEqual(expected, get_bot_response(self.details))
         expected = expected[:expected.rfind('\n')]
+        ALLERGIES.append(ALLERGIES_LIST['gluten'])
+        ALLERGIES.append(ALLERGIES_LIST['sulfite'])
+        ALLERGIES.append(ALLERGIES_LIST['egg'])
+        RESTRICTIONS.append('cheese')
+        RESTRICTIONS.append('tuna')
         RESTRICTIONS.append('marina')
         expected += '\nThis recipe should also be free of the following ingredients: ' \
                     f'{RESTRICTIONS[0]}, {RESTRICTIONS[1]}, and {RESTRICTIONS[2]}.'
         self.assertEqual(expected, get_bot_response(self.details))
         expected = expected[:expected.rfind('\n')]
         expected = expected[:expected.rfind('\n')]
+        RESTRICTIONS.append('cheese')
+        RESTRICTIONS.append('tuna')
+        RESTRICTIONS.append('marina')
         ALLERGIES.clear()
         expected += '\nThis recipe should be free of the following ingredients: ' \
                     f'{RESTRICTIONS[0]}, {RESTRICTIONS[1]}, and {RESTRICTIONS[2]}.'
@@ -195,7 +219,7 @@ class TestRecipeBot(unittest.TestCase):
             }
         }
         slots = intent['currentIntent']['slots']
-        validation_result = validate_restrictions(slots['Restrictions'])
+        validation_result = validate_slots(recipeType=slots['RecipeType'], servings=slots['Servings'], restrictions=slots['Restrictions'])
         expected = elicit_slot(
             intent['sessionAttributes'],
             intent['currentIntent']['name'],
@@ -204,6 +228,10 @@ class TestRecipeBot(unittest.TestCase):
             validation_result['message']
         )
         self.assertEqual(expected, find_recipe(intent))
+        slots['Restrictions'] = 'no'
+        expected = delegate(intent['sessionAttributes'], slots)
+        self.assertEqual(expected, find_recipe(intent))
+
 
 
 if __name__ == '__main__':

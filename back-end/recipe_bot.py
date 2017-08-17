@@ -13,24 +13,26 @@ logger.setLevel(logging.DEBUG)
 
 ALLERGIES = []
 ALLERGIES_LIST = {
-    'dairy free': 'Dairy-Free',
-    'egg free': 'Egg-Free',
-    'peanut free': 'Peanut-free',
-    'tree nut free': 'Tree Nut-Free',
-    'gluten free': 'Gluten-Free',
-    'seafood free': 'Seafood-Free',
-    'sesame free': 'Sesame-Free',
-    'soy free': 'Soy-free',
-    'sulfite free': 'Sulfite-Free',
-    'wheat free': 'Wheat-Free'
+    'dairy': 'Dairy-Free',
+    'egg': 'Egg-Free',
+    'peanut': 'Peanut-free',
+    'tree-nut': 'Tree Nut-Free',
+    'gluten': 'Gluten-Free',
+    'seafood': 'Seafood-Free',
+    'sesame': 'Sesame-Free',
+    'soy': 'Soy-free',
+    'sulfite': 'Sulfite-Free',
+    'wheat': 'Wheat-Free'
 }
 RESTRICTIONS = []
+
 
 def get_slots(intent_request):
     """
     Called by find_recipe to get currently filled slots.
     """
     return intent_request['currentIntent']['slots']
+
 
 def elicit_slot(session_attributes, intent_name, slots, slot_to_elicit, message):
     """
@@ -46,6 +48,7 @@ def elicit_slot(session_attributes, intent_name, slots, slot_to_elicit, message)
             'message': message
         }
     }
+
 
 def close(session_attributes, fulfillment_state, message):
     """
@@ -90,21 +93,30 @@ def build_validation_result(is_valid, violated_slot, message_content):
     }
 
 
-def validate_restrictions(restriction):
+def validate_slots(**slots):
     """
     Called by find_recipe to validate slot data of request.
     """
-    # If a slot is null, validation fails and returns prompt to elicit slot
-    if restriction != 'No' and restriction is not None:
-        if restriction in ALLERGIES_LIST:
-            if restriction not in ALLERGIES:
-                ALLERGIES.append(ALLERGIES_LIST[restriction])
-        else:
-            if restriction not in RESTRICTIONS:
-                RESTRICTIONS.append(restriction)
+    if 'recipeType' not in slots:
+        return build_validation_result(False,
+                                       'RecipeType',
+                                       'What kind of meal do you want to make?')
+    elif 'servings' not in slots:
+        return build_validation_result(False,
+                                       'Servings',
+                                       'How many people are you serving?')
+    elif 'restrictions' not in slots:
         return build_validation_result(False,
                                        'Restrictions',
-                                       'Are there any more dietary restrictions or allergies I should know about?')
+                                       'Are there any allergies or dietary restrictions I should know about?')
+    elif slots['restrictions'].upper() != 'NO':
+        if slots['restrictions'] in ALLERGIES_LIST:
+            ALLERGIES.append(ALLERGIES_LIST[slots['restrictions']])
+        else:
+            RESTRICTIONS.append(slots['restrictions'])
+        return build_validation_result(False,
+                                       'Restrictions',
+                                       'Would you like to add any more restrictions?')
     return build_validation_result(True, None, None)
 
 
@@ -121,7 +133,7 @@ def parse_time(time_slot):
     }
     seconds = 0
     for i, c in enumerate(time_slot):
-        if c.isdigit() and  (time_slot[i-1].isalpha() or i == 0):
+        if c.isdigit() and (time_slot[i-1].isalpha() or i == 0):
             if time_slot[i+1].isdigit():
                 seconds += convert[time_slot[i+2]](int(time_slot[i:i+2]))
             else:
@@ -168,6 +180,8 @@ def get_bot_response(details):
                 response += f'{restriction}'
             else:
                 response += f', {restriction}'
+    RESTRICTIONS.clear()
+    ALLERGIES.clear()
     return response
 
 
@@ -180,7 +194,15 @@ def find_recipe(intent_request):
     slots = get_slots(intent_request)
     # If source is DialogCodeHook, validate our slots
     if source == 'DialogCodeHook':
-        validation_result = validate_restrictions(slots["Restrictions"])
+        if not slots['RecipeType']:
+            validation_result = validate_slots()
+        elif not slots['Servings']:
+            validation_result = validate_slots(recipeType=slots['RecipeType'])
+        elif not slots['Restrictions']:
+            validation_result = validate_slots(recipeType=slots['RecipeType'], servings=slots['Servings'])
+        else:
+            validation_result = validate_slots(recipeType=slots['RecipeType'], servings=slots['Servings'],
+                                               restrictions=slots["Restrictions"])
         if not validation_result['isValid']:
             slots[validation_result['violatedSlot']] = None
             return elicit_slot(intent_request['sessionAttributes'],
@@ -189,7 +211,7 @@ def find_recipe(intent_request):
                                validation_result['violatedSlot'],
                                validation_result['message'])
         # Return attributes and slots back to bot for the next step
-        return delegate(intent_request['sessionAttributes'],slots)
+        return delegate(intent_request['sessionAttributes'], slots)
     # Make API calls based on slots elicited from user
     recipe = slots['RecipeType']
     servings = int(slots['Servings'])
@@ -250,7 +272,8 @@ def dispatch(intent_request):
     """
     Called when the user specifies an intent for this bot.
     """
-    logger.debug('dispatch userId={}, intentName={}'.format(intent_request['userId'], intent_request['currentIntent']['name']))
+    logger.debug('dispatch userId={}, intentName={}'.format(intent_request['userId'],
+                                                            intent_request['currentIntent']['name']))
     intent_name = intent_request['currentIntent']['name']
     # Dispatch to your bot's intent handlers
     if intent_name == 'FindRecipe':
@@ -258,7 +281,6 @@ def dispatch(intent_request):
     raise Exception('Intent with name ' + intent_name + ' not supported')
 
 
-""" --- Main handler --- """
 def handler(event, contex):
     """
     Handle incoming recipe requests by passing event to dispatch function
