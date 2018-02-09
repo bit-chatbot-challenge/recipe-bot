@@ -79,3 +79,6 @@ To deploy the application end-to-end:
 
 ### Getting a Recipe for Celery Soup:
 <img src="/images/recipebot5.png?raw=true" width=500>
+
+# Privacy Policy 
+Our bot does not collect any data from the user. After the recipe requirements are used to retrieve a recipe, that data is not stored anywhere.

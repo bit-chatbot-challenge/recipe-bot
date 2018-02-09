@@ -113,7 +113,7 @@ class TestRecipeBot(unittest.TestCase):
                                                            params['violated_slot'],
                                                            params['message_content']))
 
-    def test_validate_rslots(self):
+    def test_validate_slots(self):
         expected = build_validation_result(False, 'RecipeType', 'What kind of meal do you want to make?')
         test = validate_slots()
         self.assertEqual(expected, test)
@@ -231,7 +231,14 @@ class TestRecipeBot(unittest.TestCase):
         slots['Restrictions'] = 'no'
         expected = delegate(intent['sessionAttributes'], slots)
         self.assertEqual(expected, find_recipe(intent))
-
+        intent['invocationSource'] = 'FulfillmentCodeHook'
+        slots['RecipeType'] = 'Mac & Cheese'
+        intent['currentIntent']['slots'] = slots
+        expected = close(intent['sessionAttributes'],
+                         'Fulfilled',
+                         {'contentType': 'PlainText', 'content': get_bot_response(self.details)})
+        response = find_recipe(intent)
+        self.assertEqual(expected['dialogAction']['type'], response['dialogAction']['type'])
 
 
 if __name__ == '__main__':
